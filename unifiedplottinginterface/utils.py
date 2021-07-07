@@ -48,8 +48,9 @@ def validate_kwargs(kwargs2validate, kwargs):
 	- If an argument is in <kwargs2validate> and it is also in <kwargs> then
 	the corresponding validating function (according to the mapping below)
 	is called to check whether it is correct. 
-	- If an argument in <kwargs2validate> is NOT in <kwargs> then a ValueError
-	is raised.
+	- If an argument is in <kwargs2validate> and it is NOT in <kwargs>, a
+	None value is passed to the corresponding validation function and it
+	will determine whether this is fine or not.
 	- Arguments in <kwargs> that are not in <kwargs2validate> are ignored.
 	"""
 	VALIDATION_FUNCTIONS = {
@@ -60,7 +61,5 @@ def validate_kwargs(kwargs2validate, kwargs):
 		'linewidth': validate_linewidth,
 	}
 	for arg in kwargs2validate:
-		if arg not in kwargs:
-			raise ValueError(f'<{arg}> is not among the kwargs.')
-		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs[arg])
+		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
 	return kwargs
