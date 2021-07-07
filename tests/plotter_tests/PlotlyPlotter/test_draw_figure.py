@@ -1,5 +1,4 @@
 import unifiedplottinginterface as upi
-from unifiedplottinginterface.plotter import PlotlyPlotter
 import numpy as np
 
 figure_properties = [
@@ -11,8 +10,6 @@ figure_properties = [
 
 for idx,props in enumerate(figure_properties):
 	fig = upi.manager.new(**props)
-	plotly_figure = PlotlyPlotter(fig)
-	plotly_figure.save(f'{idx+1}')
 
 fig = upi.manager.new(
 	title = 'Figure with some traces',
@@ -32,4 +29,7 @@ fig.scatter(
 	marker = '.',
 	label = 'x^3',
 )
-PlotlyPlotter(fig).show()
+
+upi.manager.draw()
+for fig in upi.manager.plots:
+	fig.show()
