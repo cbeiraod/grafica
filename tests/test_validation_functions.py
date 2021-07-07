@@ -51,6 +51,19 @@ class TestProperties(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					validate_linewidth(linewidth)
 	
+	def test_validate_alpha(self):
+		for alpha in [0,1,0.5]:
+			with self.subTest(i=alpha):
+				self.assertEqual(validate_alpha(alpha), float(alpha))
+		for alpha in {',','dot','cross'}:
+			with self.subTest(i=alpha):
+				with self.assertRaises(TypeError):
+					validate_alpha(alpha)
+		for alpha in {'-2',-1,-1.5,2}:
+			with self.subTest(i=alpha):
+				with self.assertRaises(ValueError):
+					validate_alpha(alpha)
+	
 	def test_validate_kwargs(self):
 		no_error_cases = [
 			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': 'solid', 'linewidth': 2}},

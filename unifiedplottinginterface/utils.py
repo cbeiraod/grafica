@@ -1,4 +1,4 @@
-GENERAL_KWARGS_FOR_PLOTTING_METHODS = {'label','color','marker','linestyle','linewidth'}
+GENERAL_KWARGS_FOR_PLOTTING_METHODS = {'label','color','marker','linestyle','linewidth','alpha'}
 
 def validate_label(label):
 	if label is None:
@@ -38,6 +38,16 @@ def validate_linewidth(linewidth):
 	if linewidth < 0:
 		raise ValueError(f'<linewidth> must be a positive number, received {linewidth}.')
 	return linewidth
+
+def validate_alpha(alpha):
+	received_alpha = alpha
+	try:
+		alpha = float(alpha)
+	except:
+		raise TypeError(f'<alpha> must be a float number, received {received_alpha} of type {type(alpha)}.')
+	if not 0 <= alpha <= 1:
+		raise ValueError(f'<alpha> must be a positive number, received {alpha}.')
+	return alpha
 
 def validate_kwargs(kwargs2validate, kwargs):
 	"""
