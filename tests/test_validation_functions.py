@@ -48,5 +48,27 @@ class TestProperties(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					validate_linewidth(linewidth)
 	
+	def test_validate_kwargs(self):
+		no_error_cases = [
+			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': 'solid', 'linewidth': 2}},
+			{'kwargs2validate': {'linestyle','marker','color','label'}, 'kwargs': {'linestyle': 'dashed', 'marker': '.', 'color': (255,0,0), 'label': 'My plot'}},
+			{'kwargs2validate': {'color','label'}, 'kwargs': {'linestyle': 'dashed', 'marker': '.', 'color': (255,0,0), 'label': 'My plot'}},
+		]
+		for no_error_case in no_error_cases:
+			with self.subTest(i=no_error_case):
+				self.assertTrue(validate_kwargs(**no_error_case) is not None)
+		error_cases = [
+			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': 'solid', 'linewidth': -2}},
+			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': '--', 'linewidth': 2}},
+		]
+		for error_case in error_cases:
+			with self.subTest(i=error_case):
+				try:
+					validate_kwargs(**error_case)
+				except (ValueError, TypeError):
+					pass
+				else:
+					self.fail()
+	
 if __name__ == '__main__':
 	unittest.main()
