@@ -4,7 +4,10 @@ import unittest
 class TestProperties(unittest.TestCase):
 	
 	def test_validate_label(self):
-		self.assertEqual(validate_label('Gráfico'), 'Gráfico')
+		for label in ['Gráfico','This is a long label because sometimes labels are long', None]:
+			with self.subTest(i=label):
+				self.assertEqual(validate_label(label), label)
+		
 		with self.assertRaises(TypeError):
 			validate_label(9)
 	

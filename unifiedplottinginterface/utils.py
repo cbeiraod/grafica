@@ -1,6 +1,8 @@
 GENERAL_KWARGS_FOR_PLOTTING_METHODS = {'label','color','marker','linestyle','linewidth'}
 
 def validate_label(label):
+	if label is None:
+		return None
 	if not isinstance(label, str):
 		raise TypeError(f'<label> must be a string, received {label} of type {type(label)}.')
 	return label
@@ -42,6 +44,13 @@ def validate_kwargs(kwargs2validate, kwargs):
 	kwargs2validate: An iterable with the names of the kwargs that have 
 		to be validated from <kwargs>.
 	kwargs: A dictionary with the kwargs to validate.
+	
+	- If an argument is in <kwargs2validate> and it is also in <kwargs> then
+	the corresponding validating function (according to the mapping below)
+	is called to check whether it is correct. 
+	- If an argument in <kwargs2validate> is NOT in <kwargs> then a ValueError
+	is raised.
+	- Arguments in <kwargs> that are not in <kwargs2validate> are ignored.
 	"""
 	VALIDATION_FUNCTIONS = {
 		'label': validate_label,
@@ -51,5 +60,7 @@ def validate_kwargs(kwargs2validate, kwargs):
 		'linewidth': validate_linewidth,
 	}
 	for arg in kwargs2validate:
-		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
+		if arg not in kwargs:
+			raise ValueError(f'<{arg}> is not among the kwargs.')
+		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs[arg])
 	return kwargs
