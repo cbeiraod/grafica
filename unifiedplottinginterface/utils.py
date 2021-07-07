@@ -74,7 +74,7 @@ def validate_kwargs(kwargs2validate, kwargs):
 	}
 	for arg in kwargs:
 		if arg not in kwargs2validate:
-			raise ValueError(f'Wrong key word arguments {arg}.')
+			raise ValueError(f'Wrong key word arguments <{arg}>.')
 	for arg in kwargs2validate:
 		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
 	return kwargs
