@@ -67,5 +67,35 @@ class TestProperties(unittest.TestCase):
 		fig.aspect = None
 		self.assertEqual(fig.aspect, None)
 	
+	def test_set(self):
+		fig = Figure()
+		
+		nice_cases = [
+			dict(title = 'Título', subtitle = 'Subtítulo'),
+			dict(xlabel = 'Eje x', ylabel = 'Eje y'),
+		]
+		for kwargs in nice_cases:
+			with self.subTest(i=kwargs):
+				try:
+					fig.set(**kwargs)
+				except:
+					self.fail()
+				for arg,value in kwargs.items():
+					with self.subTest(i=arg):
+						self.assertEqual(getattr(fig,arg),value)
+		
+		bad_cases = [
+			dict(Title = 'Título'), # Title instead of title
+			dict(x_label = 'x'), # x_label instead of xlabel
+		]
+		for kwargs in bad_cases:
+			with self.subTest(i=kwargs):
+				try:
+					fig.set(**kwargs)
+				except ValueError:
+					pass
+				else:
+					self.fail()
+	
 if __name__ == '__main__':
 	unittest.main()

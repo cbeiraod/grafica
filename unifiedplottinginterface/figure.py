@@ -82,6 +82,11 @@ class Figure:
 			raise ValueError(f'<aspect> must be one of {VALID_ASPECTS}, received {aspect}.')
 		self._aspect = aspect
 	
+	def set(self, **kwargs):
+		for key in kwargs.keys():
+			if not hasattr(self, key):
+				raise ValueError(f'Cannot set <{key}>, invalid property.')
+			setattr(self, f'{key}', kwargs[key])
 	# ------------------------------------------------------------------
 	
 	DEFAULT_COLORS = [
@@ -109,19 +114,20 @@ class Figure:
 		kwargs: Any of {'label','color','marker','linestyle','linewidth',
 		'alpha'} is supported. Additional arguments rise a ValueError.
 		"""
+		# Arguments that must have a default value ---
 		if 'linewidth' not in kwargs:
 			kwargs['linewidth'] = self.DEFAULT_LINEWIDTH
 		if 'alpha' not in kwargs:
 			kwargs['alpha'] = self.DEFAULT_ALPHA
 		if 'color' not in kwargs:
 			kwargs['color'] = self.pick_default_color()
+		# --------------------------------------------
 		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
 		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
 			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
 		if len(x) != len(y):
 			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
-		self.traces.append({
-			'type': 'scatter', 
-			'data': {'x':x,'y':y},
-			'kwargs': kwargs,
-		})
+		trace = {'type': 'scatter', 'data': {'x':x,'y':y}}
+		for arg in kwargs:
+			trace[arg] = kwargs[arg]
+		self.traces.append(trace)
