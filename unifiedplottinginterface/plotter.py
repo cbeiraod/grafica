@@ -17,14 +17,3 @@ class Plotter:
 	def save(self, file_name=None, **kwargs):
 		"""Must override this method when inheriting."""
 		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
-	
-	def draw_figure(self):
-		"""Must override this method when inheriting. This method should
-		draw all elements of the figure such as the title, axes labels, etc."""
-		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
-	
-	def draw_traces(self):
-		"""Must override this method when inheriting. This method should 
-		draw all the traces, e.g. scatter plots, histograms, etc."""
-		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
-
