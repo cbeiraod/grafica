@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 from shutil import copyfile
-from .utils import validate_kwargs, GENERAL_KWARGS_FOR_PLOTTING_METHODS
+from .utils import validate_kwargs
 
 _VALID_AXIS_SCALES = {'lin','log'}
 

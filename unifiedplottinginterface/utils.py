@@ -1,5 +1,3 @@
-GENERAL_KWARGS_FOR_PLOTTING_METHODS = {'label','color','marker','linestyle','linewidth','alpha'}
-
 def validate_label(label):
 	if label is None:
 		return None
