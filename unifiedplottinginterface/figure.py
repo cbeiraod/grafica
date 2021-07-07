@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 from shutil import copyfile
+from .utils import validate_kwargs, GENERAL_KWARGS_FOR_PLOTTING_METHODS
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -9,26 +10,12 @@ class Figure:
 	This class defines the interface and handles all the information until
 	the plots are "drawn" with a specific package.
 	"""
-	DEFAULT_COLORS = [
-		(255, 59, 59),
-		(52, 71, 217),
-		(4, 168, 2),
-		(224, 146, 0),
-		(224, 0, 183),
-		(0, 230, 214),
-		(140, 0, 0),
-		(9, 0, 140),
-		(107, 0, 96),
-	]
-	DEFAULT_COLORS = [tuple(np.array(color)/255) for color in DEFAULT_COLORS]
-
-	def pick_default_color(self):
-		color = self.DEFAULT_COLORS[0]
-		self.DEFAULT_COLORS = self.DEFAULT_COLORS[1:] + [self.DEFAULT_COLORS[0]]
-		return color
 	
 	def __init__(self):
 		self._show_title = True
+		self.traces = []
+	
+	# Figure properties ------------------------------------------------
 	
 	@property
 	def title(self):
@@ -92,5 +79,49 @@ class Figure:
 	def aspect(self, aspect):
 		VALID_ASPECTS = {'equal',None}
 		if aspect not in VALID_ASPECTS:
-			raise ValueError(f'<aspect> must be one of {VALID_ASPECTS}, received {aspect}')
+			raise ValueError(f'<aspect> must be one of {VALID_ASPECTS}, received {aspect}.')
 		self._aspect = aspect
+	
+	# ------------------------------------------------------------------
+	
+	DEFAULT_COLORS = [
+		(255, 59, 59),
+		(52, 71, 217),
+		(4, 168, 2),
+		(224, 146, 0),
+		(224, 0, 183),
+		(0, 230, 214),
+		(140, 0, 0),
+		(9, 0, 140),
+		(107, 0, 96),
+	]
+	def pick_default_color(self):
+		color = self.DEFAULT_COLORS[0]
+		self.DEFAULT_COLORS = self.DEFAULT_COLORS[1:] + [self.DEFAULT_COLORS[0]]
+		return color
+	
+	DEFAULT_LINEWIDTH = 1
+	DEFAULT_ALPHA = 1
+	
+	def scatter(self, x, y, **kwargs):
+		"""
+		Given two iterables <x> and <y> produces a scatter plot.
+		kwargs: Any of {'label','color','marker','linestyle','linewidth',
+		'alpha'} is supported. Additional arguments rise a ValueError.
+		"""
+		if 'linewidth' not in kwargs:
+			kwargs['linewidth'] = self.DEFAULT_LINEWIDTH
+		if 'alpha' not in kwargs:
+			kwargs['alpha'] = self.DEFAULT_ALPHA
+		if 'color' not in kwargs:
+			kwargs['color'] = self.pick_default_color()
+		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
+		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
+			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
+		if len(x) != len(y):
+			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
+		self.traces.append({
+			'type': 'scatter', 
+			'data': {'x':x,'y':y},
+			'kwargs': kwargs,
+		})
