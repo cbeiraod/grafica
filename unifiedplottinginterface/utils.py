@@ -69,6 +69,7 @@ def validate_kwargs(kwargs2validate, kwargs):
 		'marker': validate_marker,
 		'linestyle': validate_linestyle,
 		'linewidth': validate_linewidth,
+		'alpha': validate_alpha,
 	}
 	for arg in kwargs2validate:
 		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
