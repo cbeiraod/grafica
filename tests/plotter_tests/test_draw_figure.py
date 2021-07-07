@@ -11,25 +11,7 @@ figure_properties = [
 for idx,props in enumerate(figure_properties):
 	fig = upi.manager.new(**props)
 
-fig = upi.manager.new(
-	title = 'Figure with some traces',
-	subtitle = 'This is the first figure with traces',
-	xlabel = 'x',
-	ylabel = 'y',
-)
-x = np.linspace(-1,1)
-fig.scatter(
-	x, 
-	x**2, 
-	label = 'x^2'
-)
-fig.scatter(
-	x,
-	x**3,
-	marker = '.',
-	label = 'x^3',
-)
+for plotter in ['plotly', 'matplotlib']:
+	upi.manager.draw(plotter=plotter)
 
-upi.manager.draw()
-for fig in upi.manager.plots:
-	fig.show()
+upi.manager.save(mkdir=True)
