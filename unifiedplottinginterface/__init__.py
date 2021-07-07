@@ -16,7 +16,7 @@ class _FigureManager:
 	@default_plotter.setter
 	def default_plotter(self, plotter_name):
 		if plotter_name not in self.plotters:
-			raise ValueError(f'<plotter_name> must be one of {self.plotters.keys()}.')
+			raise ValueError(f'<plotter_name> must be one of {set(self.plotters.keys())}.')
 		self._default_plotter = plotter_name
 	
 	def new(self, **kwargs):
