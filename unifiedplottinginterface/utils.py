@@ -15,6 +15,8 @@ def validate_color(color):
 		raise TypeError(f'<color> must be an iterable of the form (r,g,b) where r,g and b are integer numbers from 0 to 255. Received {color}.')
 	if len(color) != 3 or any({not isinstance(i,int) for i in color}) or any({not 0<=i<=255 for i in color}):
 		raise ValueError(f'<color> must contain 3 integer numbers ranging from 0 to 255, received {received_color}.')
+	if sum(color) > 3: # This probably means that it was specified with rgb values in the range 0-255, which is an old pain. I convert this to values in 0-1.
+		color = tuple([rgb/255 for rgb in color])
 	return color
 
 VALID_MARKERS = {'.','o','+','x','*', None}
@@ -23,7 +25,7 @@ def validate_marker(marker):
 		raise ValueError(f'<marker> must be one of {VALID_MARKERS}, received {marker}.')
 	return marker
 
-VALID_LINESTYLES = {'solid','dotted','dashed', None}
+VALID_LINESTYLES = {'solid','dotted','dashed', 'none', None}
 def validate_linestyle(linestyle):
 	if linestyle not in VALID_LINESTYLES:
 		raise ValueError(f'<linestyle> must be one of {VALID_LINESTYLES}, received {linestyle}.')

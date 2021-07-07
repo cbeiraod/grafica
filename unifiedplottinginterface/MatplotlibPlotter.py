@@ -9,7 +9,7 @@ class MatplotlibPlotter(Plotter):
 		self.matplotlib_figure = fig
 		self.matplotlib_axes = ax
 		self.draw_figure()
-		# ~ self.draw_traces()
+		self.draw_traces()
 	
 	def show(self):
 		plt.show()
@@ -37,8 +37,28 @@ class MatplotlibPlotter(Plotter):
 		if self.parent_figure.subtitle != None:
 			self.matplotlib_axes.set_title(self.parent_figure.subtitle)
 	
-	# ~ def draw_traces(self):
-		# ~ pass
+	def draw_traces(self):
+		traces_drawing_methods = {
+			'scatter': self.draw_scatter,
+		}
+		for trace in self.parent_figure.traces:
+			if trace['type'] not in traces_drawing_methods:
+				raise RuntimeError(f"Don't know how to draw a <{trace['type']}> trace...")
+			traces_drawing_methods[trace['type']](trace)
+	
+	def draw_scatter(self, scatter):
+		"""Draws a scatter plot created by super().scatter."""
+		kwargs4matplotlib = dict(scatter) # Make a copy.
+		kwargs4matplotlib.pop('data')
+		kwargs4matplotlib.pop('type')
+		kwargs4matplotlib['linestyle'] = map_linestyle_to_Matplotlib_linestyle(kwargs4matplotlib.get('linestyle'))
+		self.matplotlib_axes.plot(
+			scatter['data']['x'],
+			scatter['data']['y'],
+			**kwargs4matplotlib,
+		)
+		if scatter.get('label') != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
+			self.matplotlib_axes.legend()
 	
 def map_axes_scale_to_Matplotlib_scale(scale):
 	if scale is None or scale == 'lin':
@@ -47,3 +67,13 @@ def map_axes_scale_to_Matplotlib_scale(scale):
 		return 'log'
 	else:
 		raise ValueError(f"Don't know the meaning of scale = {scale}.")
+
+def map_linestyle_to_Matplotlib_linestyle(linestyle):
+	linestyle_map = {
+		'solid': 'solid',
+		None: 'solid',
+		'none': 'none',
+		'dashed': 'dashed',
+		'dotted':  'dotted',
+	}
+	return linestyle_map[linestyle]
