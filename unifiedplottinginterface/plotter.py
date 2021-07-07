@@ -16,7 +16,7 @@ class Plotter:
 		"""Must override this method when inheriting."""
 		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
-	def save(self, fname=None, *args, **kwargs):
+	def save(self, file_name=None, **kwargs):
 		"""Must override this method when inheriting."""
 		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
 	
@@ -39,6 +39,21 @@ class PlotlyPlotter(Plotter):
 	
 	def show(self):
 		self.plotly_figure.show()
+	
+	def save(self, file_name=None, include_plotlyjs='cdn', auto_open=False, **kwargs):
+		if file_name is None:
+			file_name = self.parent_figure.title
+		if file_name is None: # If it is still None...
+			raise ValueError(f'Please provide a name for saving the figure to a file by the <file_name> argument.')
+		if file_name[-5:] != '.html':
+			file_name += '.html'
+		plotly.offline.plot(
+			self.plotly_figure,
+			filename = file_name,
+			auto_open = auto_open,
+			include_plotlyjs = include_plotlyjs,
+			**kwargs
+		)
 	
 	def draw_figure(self):
 		if self.parent_figure.show_title == True and self.parent_figure.title != None:
