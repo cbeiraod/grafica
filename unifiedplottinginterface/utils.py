@@ -61,7 +61,8 @@ def validate_kwargs(kwargs2validate, kwargs):
 	- If an argument is in <kwargs2validate> and it is NOT in <kwargs>, a
 	None value is passed to the corresponding validation function and it
 	will determine whether this is fine or not.
-	- Arguments in <kwargs> that are not in <kwargs2validate> are ignored.
+	- Arguments in <kwargs> that are not in <kwargs2validate> will raise
+	an error.
 	"""
 	VALIDATION_FUNCTIONS = {
 		'label': validate_label,
@@ -71,6 +72,9 @@ def validate_kwargs(kwargs2validate, kwargs):
 		'linewidth': validate_linewidth,
 		'alpha': validate_alpha,
 	}
+	for arg in kwargs:
+		if arg not in kwargs2validate:
+			raise ValueError(f'Wrong key word arguments {arg}.')
 	for arg in kwargs2validate:
 		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
 	return kwargs
