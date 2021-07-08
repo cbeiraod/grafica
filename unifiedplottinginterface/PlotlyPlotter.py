@@ -113,6 +113,7 @@ class PlotlyPlotter(Plotter):
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
+				hoverinfo='skip',
 			)
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
@@ -130,11 +131,30 @@ class PlotlyPlotter(Plotter):
 						dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
 					),
 					legendgroup = legendgroup,
+					hoverinfo = 'skip',
 					showlegend = False,
 				)
 			)
 			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
-			self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
+		self.plotly_figure.add_traces(
+			go.Scatter(
+				x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))][1:-1],
+				y = histogram['data']['y'][::2][1:-1],
+				name = histogram.get('label'),
+				mode = 'lines',
+				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
+				opacity = histogram.get('alpha'),
+				line = dict(
+					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+				),
+				legendgroup = legendgroup,
+				showlegend = False,
+				text = [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-2)],
+				hovertemplate = "%{text}",
+			)
+		)
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+		self.plotly_figure['data'][-1]['line']['width'] = 0
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = [0],
