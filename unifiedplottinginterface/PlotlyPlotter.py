@@ -121,8 +121,8 @@ class PlotlyPlotter(Plotter):
 		if histogram.get('marker') is not None:
 			self.plotly_figure.add_traces(
 				go.Scatter(
-					x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))][1:-1],
-					y = histogram['data']['y'][::2][1:-1],
+					x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))],
+					y = histogram['data']['y'][::2],
 					name = histogram.get('label'),
 					mode = 'markers',
 					marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
@@ -138,8 +138,8 @@ class PlotlyPlotter(Plotter):
 			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
 		self.plotly_figure.add_traces(
 			go.Scatter(
-				x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))][1:-1],
-				y = histogram['data']['y'][::2][1:-1],
+				x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))],
+				y = histogram['data']['y'][::2],
 				name = histogram.get('label'),
 				mode = 'lines',
 				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
@@ -149,7 +149,7 @@ class PlotlyPlotter(Plotter):
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
-				text = [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-1)],
+				text = [f'Bin: [-∞, {histogram["data"]["bin_edges"][0]:.2e}]<br>Count: {histogram["data"]["bin_count"][0]:.2e}'] + [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-1)] + [f'Bin: [{histogram["data"]["bin_edges"][-1]:.2e},∞]<br>Count: {histogram["data"]["bin_count"][-1]:.2e}'],
 				hovertemplate = "%{text}",
 			)
 		)
