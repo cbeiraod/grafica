@@ -60,6 +60,6 @@ for idx,linewidth in enumerate([.5,1,3,6,None]):
 			color = (0,0,1),
 		)
 
-for plotter in ['plotly', 'matplotlib']:
+for plotter in upi.manager.plotters:
 	upi.manager.draw(plotter=plotter)
 upi.manager.save(mkdir=True)
