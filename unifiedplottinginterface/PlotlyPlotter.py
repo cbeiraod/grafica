@@ -2,6 +2,7 @@ from .figure import Figure
 from .plotter import Plotter
 import plotly.graph_objects as go
 import plotly
+import numpy as np
 
 class PlotlyPlotter(Plotter):
 	def __init__(self, figure):
@@ -97,11 +98,12 @@ class PlotlyPlotter(Plotter):
 	
 	def draw_histogram(self, histogram):
 		"""Draws a histogram plot created by super().histogram."""
-		histogram['data']['x'][0] = histogram['data']['x'][1] - (histogram['data']['x'][3]-histogram['data']['x'][1]) # Plotly does not plot points in infinity.
-		histogram['data']['x'][-1] = histogram['data']['x'][-2] + (histogram['data']['x'][-2]-histogram['data']['x'][-4]) # Plotly does not plot points in infinity.
+		x = np.array(histogram['data']['x']) # Make a copy to avoid touching the original data.
+		x[0] = x[1] - (x[3]-x[1]) # Plotly does not plot points in infinity.
+		x[-1] = x[-2] + (x[-2]-x[-4]) # Plotly does not plot points in infinity.
 		self.plotly_figure.add_traces(
 			go.Scatter(
-				x = histogram['data']['x'], 
+				x = x, 
 				y = histogram['data']['y'],
 				name = histogram.get('label'),
 				opacity = histogram.get('alpha'),
