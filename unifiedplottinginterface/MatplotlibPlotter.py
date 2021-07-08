@@ -74,7 +74,22 @@ class MatplotlibPlotter(Plotter):
 		self.matplotlib_axes.plot(
 			x,
 			histogram['data']['y'],
-			**kwargs4matplotlib,
+			**{arg:val for arg,val in kwargs4matplotlib.items() if arg not in {'marker', 'label'}},
+		)
+		
+		self.matplotlib_axes.plot(
+			[x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))][1:-1],
+			histogram['data']['y'][::2][1:-1],
+			color = kwargs4matplotlib['color'],
+			marker = kwargs4matplotlib['marker'],
+			linestyle = 'none',
+		)
+		self.matplotlib_axes.plot(
+			[0],
+			[float('NaN')],
+			color = kwargs4matplotlib['color'],
+			marker = kwargs4matplotlib['marker'],
+			label = kwargs4matplotlib['label'],
 		)
 		if histogram.get('label') != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
 			self.matplotlib_axes.legend()

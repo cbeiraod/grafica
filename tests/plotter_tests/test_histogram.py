@@ -16,11 +16,19 @@ fig.histogram(
 	bins = bins,
 	label = f'bins = {bins}',
 )
-bins = [0,.5,1,2]
+bins = [-1,-.1,.1,1,2]
 fig.histogram(
 	samples,
 	bins = bins,
-	label = f'bins = {bins}'
+	label = f'bins = {bins}',
+	marker = '*',
+)
+bins = 6
+fig.histogram(
+	samples,
+	marker = '.',
+	label = f'bins={bins}',
+	bins = bins,
 )
 
 for plotter in upi.manager.plotters:
