@@ -1,10 +1,10 @@
 import unifiedplottinginterface as upi
 import numpy as np
 
-# ~ samples = [item for sublist in [[i+.6]*i for i in [1,2,3,4,5]] for item in sublist]
 samples = np.random.randn(999)
 fig = upi.manager.new(
 	title = 'Histogram',
+	subtitle = 'All the traces use the exact same data',
 )
 fig.histogram(
 	samples,
