@@ -16,6 +16,8 @@ class Figure:
 		self.traces = []
 	
 	# Figure properties ------------------------------------------------
+	# 	Figure properties are those things that belong to the figure
+	# 	itself and not to particular traces. Examples: title, x scale, etc.
 	
 	@property
 	def title(self):
