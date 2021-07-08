@@ -1,4 +1,4 @@
-from unifiedplottinginterface.utils import *
+from unifiedplottinginterface.validation import *
 import unittest
 
 class TestProperties(unittest.TestCase):
@@ -70,6 +70,7 @@ class TestProperties(unittest.TestCase):
 			{'kwargs2validate': {'linestyle','marker','color','label'}, 'kwargs': {'linestyle': 'dashed', 'marker': '.', 'color': (255,0,0), 'label': 'My plot'}},
 			{'kwargs2validate': {'color','label','linestyle','marker'}, 'kwargs': {'linestyle': 'dashed', 'marker': '.', 'color': (255,0,0), 'label': 'My plot'}},
 			{'kwargs2validate': {'linestyle','linewidth', 'marker'}, 'kwargs': {'linestyle': 'solid', 'linewidth': 2}},
+			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {}},
 		]
 		for no_error_case in no_error_cases:
 			with self.subTest(i=no_error_case):
@@ -77,7 +78,6 @@ class TestProperties(unittest.TestCase):
 		error_cases = [
 			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': 'solid', 'linewidth': -2}}, # linewidth < 0
 			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestyle': '--', 'linewidth': 2}}, # invalid linestyle
-			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {}}, # linewidth is None
 			{'kwargs2validate': {'linestyle','linewidth'}, 'kwargs': {'linestylesssss': 'solid'}}, # linestylesssss not in kwargs2validate
 		]
 		for error_case in error_cases:

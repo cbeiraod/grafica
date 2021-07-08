@@ -6,6 +6,8 @@ def validate_label(label):
 	return label
 
 def validate_color(color):
+	if color is None:
+		raise ValueError(f'<color> cannot be None, it must have some value. The user should never see this error, so a color must be specified in the corresponding Figure method (e.g. Figure.scatter) if the user does not specifies any.')
 	received_color = color
 	try:
 		color = tuple(color)
@@ -30,6 +32,8 @@ def validate_linestyle(linestyle):
 	return linestyle
 
 def validate_linewidth(linewidth):
+	if linewidth is None: # Use the defaultl value.
+		return 1
 	received_linewidth = linewidth
 	try:
 		linewidth = float(linewidth)
@@ -40,6 +44,8 @@ def validate_linewidth(linewidth):
 	return linewidth
 
 def validate_alpha(alpha):
+	if alpha is None: # Use the default value
+		return 1
 	received_alpha = alpha
 	try:
 		alpha = float(alpha)
@@ -49,6 +55,14 @@ def validate_alpha(alpha):
 		raise ValueError(f'<alpha> must be a positive number, received {alpha}.')
 	return alpha
 
+VALIDATION_FUNCTIONS_MAPPING = {
+	'label': validate_label,
+	'color': validate_color,
+	'marker': validate_marker,
+	'linestyle': validate_linestyle,
+	'linewidth': validate_linewidth,
+	'alpha': validate_alpha,
+}
 def validate_kwargs(kwargs2validate, kwargs):
 	"""
 	kwargs2validate: An iterable with the names of the kwargs that have 
@@ -64,17 +78,9 @@ def validate_kwargs(kwargs2validate, kwargs):
 	- Arguments in <kwargs> that are not in <kwargs2validate> will raise
 	an error.
 	"""
-	VALIDATION_FUNCTIONS = {
-		'label': validate_label,
-		'color': validate_color,
-		'marker': validate_marker,
-		'linestyle': validate_linestyle,
-		'linewidth': validate_linewidth,
-		'alpha': validate_alpha,
-	}
 	for arg in kwargs:
 		if arg not in kwargs2validate:
 			raise ValueError(f'Wrong key word arguments <{arg}>.')
 	for arg in kwargs2validate:
-		kwargs[arg] = VALIDATION_FUNCTIONS[arg](kwargs.get(arg))
+		kwargs[arg] = VALIDATION_FUNCTIONS_MAPPING[arg](kwargs.get(arg))
 	return kwargs

@@ -1,5 +1,5 @@
 import numpy as np
-from .utils import validate_kwargs
+from .validation import validate_kwargs
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -89,6 +89,30 @@ class Figure:
 			setattr(self, f'{key}', kwargs[key])
 	# ------------------------------------------------------------------
 	
+	def scatter(self, x, y, **kwargs):
+		"""Given two iterables <x> and <y> produces a scatter plot.
+		kwargs: Any of {'label','color','marker','linestyle','linewidth',
+		'alpha'} is supported. Additional arguments rise a ValueError.
+		"""
+		if kwargs.get('color') is None:
+			kwargs['color'] = self.pick_default_color()
+		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
+		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
+			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
+		if len(x) != len(y):
+			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
+		trace = {'type': 'scatter', 'data': {'x':x,'y':y}}
+		for arg in kwargs:
+			trace[arg] = kwargs[arg]
+		self.traces.append(trace)
+	
+	def histogram(self, x, **kwargs):
+		"""Given a collection of sample data <x> produces a histogram
+		plot."""
+		raise NotImplementedError()
+	
+	# ------------------------------------------------------------------
+	
 	DEFAULT_COLORS = [
 		(255, 59, 59),
 		(52, 71, 217),
@@ -104,30 +128,3 @@ class Figure:
 		color = self.DEFAULT_COLORS[0]
 		self.DEFAULT_COLORS = self.DEFAULT_COLORS[1:] + [self.DEFAULT_COLORS[0]]
 		return color
-	
-	DEFAULT_LINEWIDTH = 1
-	DEFAULT_ALPHA = 1
-	
-	def scatter(self, x, y, **kwargs):
-		"""
-		Given two iterables <x> and <y> produces a scatter plot.
-		kwargs: Any of {'label','color','marker','linestyle','linewidth',
-		'alpha'} is supported. Additional arguments rise a ValueError.
-		"""
-		# Arguments that must have a default value ---
-		if 'linewidth' not in kwargs:
-			kwargs['linewidth'] = self.DEFAULT_LINEWIDTH
-		if 'alpha' not in kwargs:
-			kwargs['alpha'] = self.DEFAULT_ALPHA
-		if 'color' not in kwargs:
-			kwargs['color'] = self.pick_default_color()
-		# --------------------------------------------
-		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
-		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
-			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
-		if len(x) != len(y):
-			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
-		trace = {'type': 'scatter', 'data': {'x':x,'y':y}}
-		for arg in kwargs:
-			trace[arg] = kwargs[arg]
-		self.traces.append(trace)
