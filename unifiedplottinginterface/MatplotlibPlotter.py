@@ -1,6 +1,7 @@
 from .figure import Figure
 from .plotter import Plotter
 import matplotlib.pyplot as plt
+import numpy as np
 
 class MatplotlibPlotter(Plotter):
 	def __init__(self, figure):
@@ -67,8 +68,11 @@ class MatplotlibPlotter(Plotter):
 		kwargs4matplotlib.pop('data')
 		kwargs4matplotlib.pop('type')
 		kwargs4matplotlib['linestyle'] = map_linestyle_to_Matplotlib_linestyle(kwargs4matplotlib.get('linestyle'))
+		x = np.array(histogram['data']['x']) # Make a copy to avoid touching the original data.
+		x[0] = x[1] - (x[3]-x[1]) # Matplotlib does not plot points in infinity.
+		x[-1] = x[-2] + (x[-2]-x[-4]) # Matplotlib does not plot points in infinity.
 		self.matplotlib_axes.plot(
-			histogram['data']['x'],
+			x,
 			histogram['data']['y'],
 			**kwargs4matplotlib,
 		)
