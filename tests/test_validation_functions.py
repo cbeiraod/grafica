@@ -15,7 +15,7 @@ class TestProperties(unittest.TestCase):
 		for color in [(0,0,0),(1,2,3),(255,255,255),[1,2,3]]:
 			with self.subTest(i=color):
 				self.assertEqual(validate_color(color),tuple([rgb/255 for rgb in color]))
-		for color in [(-1,1,1),(.1,.2,.3),(444,0,0),'#fcba03',(1,2,3,4)]:
+		for color in [(-1,1,1),(444,0,0),'#fcba03',(1,2,3,4)]:
 			with self.subTest(i=color):
 				with self.assertRaises(ValueError):
 					validate_color(color)
