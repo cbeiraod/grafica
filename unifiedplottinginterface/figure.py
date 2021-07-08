@@ -1,6 +1,4 @@
 import numpy as np
-import warnings
-from shutil import copyfile
 from .utils import validate_kwargs
 
 _VALID_AXIS_SCALES = {'lin','log'}
