@@ -149,7 +149,7 @@ class PlotlyPlotter(Plotter):
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
-				text = [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-2)],
+				text = [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-1)],
 				hovertemplate = "%{text}",
 			)
 		)
