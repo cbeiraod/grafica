@@ -69,6 +69,7 @@ class PlotlyPlotter(Plotter):
 	def draw_traces(self):
 		traces_drawing_methods = {
 			'scatter': self.draw_scatter,
+			'histogram': self.draw_histogram,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -93,6 +94,25 @@ class PlotlyPlotter(Plotter):
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(scatter.get('color'))
 		self.plotly_figure['data'][-1]['line']['width'] = scatter.get('linewidth')
+	
+	def draw_histogram(self, histogram):
+		"""Draws a histogram plot created by super().histogram."""
+		histogram['data']['x'][0] = histogram['data']['x'][1] - (histogram['data']['x'][3]-histogram['data']['x'][1]) # Plotly does not plot points in infinity.
+		histogram['data']['x'][-1] = histogram['data']['x'][-2] + (histogram['data']['x'][-2]-histogram['data']['x'][-4]) # Plotly does not plot points in infinity.
+		self.plotly_figure.add_traces(
+			go.Scatter(
+				x = histogram['data']['x'], 
+				y = histogram['data']['y'],
+				name = histogram.get('label'),
+				opacity = histogram.get('alpha'),
+				mode = translate_marker_and_linestyle_to_Plotly_mode(histogram.get('marker'), histogram.get('linestyle')),
+				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
+				showlegend = True if histogram.get('label') != None else False,
+				line = dict(
+					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+				)
+			)
+		)
 		
 def translate_marker_and_linestyle_to_Plotly_mode(marker, linestyle):
 	"""<marker> and <linestyle> are each one and only one of the valid

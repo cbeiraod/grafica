@@ -40,6 +40,7 @@ class MatplotlibPlotter(Plotter):
 	def draw_traces(self):
 		traces_drawing_methods = {
 			'scatter': self.draw_scatter,
+			'histogram': self.draw_histogram,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -58,6 +59,20 @@ class MatplotlibPlotter(Plotter):
 			**kwargs4matplotlib,
 		)
 		if scatter.get('label') != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
+			self.matplotlib_axes.legend()
+	
+	def draw_histogram(self, histogram):
+		"""Draws a histogram plot created by super().histogram."""
+		kwargs4matplotlib = dict(histogram) # Make a copy.
+		kwargs4matplotlib.pop('data')
+		kwargs4matplotlib.pop('type')
+		kwargs4matplotlib['linestyle'] = map_linestyle_to_Matplotlib_linestyle(kwargs4matplotlib.get('linestyle'))
+		self.matplotlib_axes.plot(
+			histogram['data']['x'],
+			histogram['data']['y'],
+			**kwargs4matplotlib,
+		)
+		if histogram.get('label') != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
 			self.matplotlib_axes.legend()
 	
 def map_axes_scale_to_Matplotlib_scale(scale):

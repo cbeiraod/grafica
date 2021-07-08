@@ -106,10 +106,42 @@ class Figure:
 			trace[arg] = kwargs[arg]
 		self.traces.append(trace)
 	
-	def histogram(self, x, **kwargs):
+	def histogram(self, samples, density=False, bins='auto', **kwargs):
 		"""Given a collection of sample data <x> produces a histogram
-		plot."""
-		raise NotImplementedError()
+		plot.
+		samples: Array like containing the data.
+		density: Same behavior as density argument of numpy.histogram function.
+		bins: Same behavior as the bins argument of numpy.histogram function.
+		kwargs: Any of {'label','color','marker','linestyle','linewidth',
+		'alpha'} is supported."""
+		if kwargs.get('color') is None:
+			kwargs['color'] = self.pick_default_color()
+		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
+		if not hasattr(samples, '__iter__'):
+			raise ValueError(f'<samples> must be iterable.')
+		samples = np.array(samples)
+		hist, bin_edges = np.histogram(
+			samples[~np.isnan(samples)], 
+			bins = bins,
+			density = density,
+		)
+		x = [-float('inf')]
+		y = [sum(samples<bin_edges[0])]
+		for idx,count in enumerate(hist):
+			x.append(bin_edges[idx])
+			x.append(bin_edges[idx])
+			y.append(y[-1])
+			y.append(count)
+		x.append(bin_edges[-1])
+		y.append(y[-1])
+		x.append(bin_edges[-1])
+		y.append(sum(samples>bin_edges[-1]))
+		x.append(float('inf'))
+		y.append(y[-1])
+		trace = {'type': 'histogram', 'data': {'x':np.array(x),'y':np.array(y), 'bin_edges': np.array(bin_edges), 'bin_count': np.array([y[0]] + list(hist) + [y[-1]])}}
+		for arg in kwargs:
+			trace[arg] = kwargs[arg]
+		self.traces.append(trace)
 	
 	# ------------------------------------------------------------------
 	
