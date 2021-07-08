@@ -113,6 +113,8 @@ class PlotlyPlotter(Plotter):
 				)
 			)
 		)
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+		self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
 		
 def translate_marker_and_linestyle_to_Plotly_mode(marker, linestyle):
 	"""<marker> and <linestyle> are each one and only one of the valid
