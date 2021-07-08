@@ -101,18 +101,53 @@ class PlotlyPlotter(Plotter):
 		x = np.array(histogram['data']['x']) # Make a copy to avoid touching the original data.
 		x[0] = x[1] - (x[3]-x[1]) # Plotly does not plot points in infinity.
 		x[-1] = x[-2] + (x[-2]-x[-4]) # Plotly does not plot points in infinity.
+		legendgroup = str(np.random.rand(3))
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = x, 
 				y = histogram['data']['y'],
-				name = histogram.get('label'),
 				opacity = histogram.get('alpha'),
+				mode = 'lines',
+				line = dict(
+					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+				),
+				legendgroup = legendgroup,
+				showlegend = False,
+			)
+		)
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+		self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
+		if histogram.get('marker') is not None:
+			self.plotly_figure.add_traces(
+				go.Scatter(
+					x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))][1:-1],
+					y = histogram['data']['y'][::2][1:-1],
+					name = histogram.get('label'),
+					mode = 'markers',
+					marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
+					opacity = histogram.get('alpha'),
+					line = dict(
+						dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+					),
+					legendgroup = legendgroup,
+					showlegend = False,
+				)
+			)
+			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+			self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
+		self.plotly_figure.add_traces(
+			go.Scatter(
+				x = [0],
+				y = [float('NaN')],
+				name = histogram.get('label'),
 				mode = translate_marker_and_linestyle_to_Plotly_mode(histogram.get('marker'), histogram.get('linestyle')),
 				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
+				opacity = histogram.get('alpha'),
 				showlegend = True if histogram.get('label') != None else False,
 				line = dict(
 					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
-				)
+				),
+				legendgroup = legendgroup,
 			)
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
