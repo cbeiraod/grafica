@@ -73,6 +73,7 @@ class PlotlyPlotter(Plotter):
 			'scatter': self.draw_scatter,
 			'histogram': self.draw_histogram,
 			'heatmap': self.draw_heatmap,
+			'contour': self.draw_contour,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -197,6 +198,39 @@ class PlotlyPlotter(Plotter):
 					titleside = 'right',
 				),
 				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap["zlabel"] if heatmap.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+			)
+		)
+		self.plotly_figure.update_layout(legend_orientation="h")
+	
+	def draw_contour(self, contour):
+		x = contour['data']['x']
+		y = contour['data']['y']
+		z = contour['data']['z']
+		if contour.get('zscale') == 'log' and (z<=0).any():
+			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			with warnings.catch_warnings():
+				warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				z = np.log(z)
+		self.plotly_figure.add_trace(
+			go.Contour(
+				x = x,
+				y = y,
+				z = z,
+				opacity = contour.get('alpha'),
+				zmin = contour.get('zlim')[0] if contour.get('zlim') is not None else None,
+				zmax = contour.get('zlim')[1] if contour.get('zlim') is not None else None,
+				colorbar = dict(
+					title = ('log ' if contour.get('zscale') == 'log' else '') + (contour.get('zlabel') if contour.get('zlabel') is not None else ''),
+					titleside = 'right',
+				),
+				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(contour["zlabel"] if contour.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>',
+				contours=dict(
+					coloring = 'heatmap',
+					showlabels = True, # show labels on contours
+					labelfont = dict( # label font properties
+						color = 'black',
+					)
+				)
 			)
 		)
 		self.plotly_figure.update_layout(legend_orientation="h")
