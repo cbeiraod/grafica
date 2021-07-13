@@ -1,7 +1,9 @@
 from .figure import Figure
 from .plotter import Plotter
 import matplotlib.pyplot as plt
+import matplotlib.colors as matplotlib_colors
 import numpy as np
+import warnings
 
 class MatplotlibPlotter(Plotter):
 	def __init__(self, figure):
@@ -42,6 +44,7 @@ class MatplotlibPlotter(Plotter):
 		traces_drawing_methods = {
 			'scatter': self.draw_scatter,
 			'histogram': self.draw_histogram,
+			'heatmap': self.draw_heatmap,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -93,6 +96,32 @@ class MatplotlibPlotter(Plotter):
 		)
 		if histogram.get('label') != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
 			self.matplotlib_axes.legend()
+	
+	def draw_heatmap(self, heatmap):
+		x = heatmap['data']['x']
+		y = heatmap['data']['y']
+		z = np.array(heatmap['data']['z']) # Make a copy so I don't touch the original.
+		vmin = heatmap.get('zlim')[0] if heatmap.get('zlim') is not None else np.nanmin(z)
+		vmax = heatmap.get('zlim')[1] if heatmap.get('zlim') is not None else np.nanmax(z)
+		if heatmap.get('zscale') in [None, 'lin']: # Linear scale
+			norm = matplotlib_colors.Normalize(vmin=vmin, vmax=vmax)
+		elif heatmap.get('zscale') == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+				z[z<=0] = float('Nan')
+			norm = matplotlib_colors.LogNorm(vmin=max(vmin,np.nanmin(z)), vmax=vmax)
+		cs = self.matplotlib_axes.pcolormesh(
+			x, 
+			y, 
+			z, 
+			rasterized = True, # To avoid heavy PDF files. After all, the heatmap plot is a pixel map...
+			shading = 'auto', 
+			cmap = 'Blues_r',
+			norm = norm, 
+		)
+		cbar = self.matplotlib_figure.colorbar(cs)
+		if heatmap.get('zlabel') is not None:
+			cbar.set_label(heatmap.get('zlabel'), rotation = 90)
 	
 def map_axes_scale_to_Matplotlib_scale(scale):
 	if scale is None or scale == 'lin':
