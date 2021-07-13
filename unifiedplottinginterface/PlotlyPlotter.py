@@ -3,6 +3,7 @@ from .plotter import Plotter
 import plotly.graph_objects as go
 import plotly
 import numpy as np
+import warnings
 
 class PlotlyPlotter(Plotter):
 	def __init__(self, figure):
@@ -71,6 +72,7 @@ class PlotlyPlotter(Plotter):
 		traces_drawing_methods = {
 			'scatter': self.draw_scatter,
 			'histogram': self.draw_histogram,
+			'heatmap': self.draw_heatmap,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -172,6 +174,32 @@ class PlotlyPlotter(Plotter):
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
 		self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
+	
+	def draw_heatmap(self, heatmap):
+		x = heatmap['data']['x']
+		y = heatmap['data']['y']
+		z = heatmap['data']['z']
+		if heatmap.get('zscale') == 'log' and (z<=0).any():
+			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			with warnings.catch_warnings():
+				warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				z = np.log(z)
+		self.plotly_figure.add_trace(
+			go.Heatmap(
+				x = x,
+				y = y,
+				z = z,
+				opacity = heatmap.get('alpha'),
+				zmin = heatmap.get('zlim')[0] if heatmap.get('zlim') is not None else None,
+				zmax = heatmap.get('zlim')[1] if heatmap.get('zlim') is not None else None,
+				colorbar = dict(
+					title = ('log ' if heatmap.get('zscale') == 'log' else '') + (heatmap.get('zlabel') if heatmap.get('zlabel') is not None else ''),
+					titleside = 'right',
+				),
+				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap["zlabel"] if heatmap.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+			)
+		)
+		self.plotly_figure.update_layout(legend_orientation="h")
 		
 def translate_marker_and_linestyle_to_Plotly_mode(marker, linestyle):
 	"""<marker> and <linestyle> are each one and only one of the valid
