@@ -3,7 +3,6 @@ import numpy as np
 
 x = np.linspace(0,np.pi,99)
 y = np.linspace(0,2*np.pi,77)
-# ~ y = ['A', 'B', 'C']
 
 xx, yy = np.meshgrid(x,y)
 zz = np.sin(xx)
@@ -57,6 +56,6 @@ fig.heatmap(
 	zlim = (.5,1.5),
 )
 
-for plotter in {'plotly'}:
+for plotter in upi.manager.plotters:
 	upi.manager.draw(plotter=plotter)
 upi.manager.save(mkdir=True)
