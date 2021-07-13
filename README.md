@@ -8,5 +8,6 @@ The maxims to guide the development of this package are:
 
 - The interface tries to capture the "concept" of each kind of plot rather than its drawing details.
 - The interface is simple and easy without complicated details.
+- The user must be able to easily access any property of the figure and/or any trace it contains.
 
 This is an evolution of [myplotlib](https://github.com/SengerM/myplotlib).
