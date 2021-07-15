@@ -45,6 +45,7 @@ class MatplotlibPlotter(Plotter):
 			'scatter': self.draw_scatter,
 			'histogram': self.draw_histogram,
 			'heatmap': self.draw_heatmap,
+			'contour': self.draw_contour,
 		}
 		for trace in self.parent_figure.traces:
 			if trace['type'] not in traces_drawing_methods:
@@ -122,6 +123,33 @@ class MatplotlibPlotter(Plotter):
 		cbar = self.matplotlib_figure.colorbar(cs)
 		if heatmap.get('zlabel') is not None:
 			cbar.set_label(heatmap.get('zlabel'), rotation = 90)
+	
+	def draw_contour(self, contour):
+		x = contour['data']['x']
+		y = contour['data']['y']
+		z = np.array(contour['data']['z']) # Make a copy so I don't touch the original.
+		vmin = contour.get('zlim')[0] if contour.get('zlim') is not None else np.nanmin(z)
+		vmax = contour.get('zlim')[1] if contour.get('zlim') is not None else np.nanmax(z)
+		if contour.get('zscale') in [None, 'lin']: # Linear scale
+			norm = matplotlib_colors.Normalize(vmin=vmin, vmax=vmax)
+		elif contour.get('zscale') == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+				z[z<=0] = float('Nan')
+			norm = matplotlib_colors.LogNorm(vmin=max(vmin,np.nanmin(z)), vmax=vmax)
+		cs = self.matplotlib_axes.contour(
+			x, 
+			y, 
+			z, 
+			rasterized = True, # To avoid heavy PDF files. After all, the contour plot is a pixel map...
+			shading = 'auto', 
+			cmap = 'Blues_r',
+			norm = norm, 
+		)
+		cbar = self.matplotlib_figure.colorbar(cs)
+		if contour.get('zlabel') is not None:
+			cbar.set_label(contour.get('zlabel'), rotation = 90)
+		
 	
 def map_axes_scale_to_Matplotlib_scale(scale):
 	if scale is None or scale == 'lin':

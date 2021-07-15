@@ -5,7 +5,7 @@ x = np.linspace(0,np.pi,99)
 y = np.linspace(0,2*np.pi,77)
 
 xx, yy = np.meshgrid(x,y)
-zz = np.sin(xx)
+zz = np.sin(xx)+np.cos(yy)
 
 fig = upi.manager.new(
 	title = 'Basic contour plot',
@@ -56,6 +56,6 @@ fig.contour(
 	zlim = (.5,1.5),
 )
 
-for plotter in {'plotly'}:# upi.manager.plotters:
+for plotter in {'plotly','matplotlib'}:# upi.manager.plotters:
 	upi.manager.draw(plotter=plotter)
 upi.manager.save(mkdir=True)
