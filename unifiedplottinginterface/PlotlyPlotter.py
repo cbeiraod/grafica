@@ -1,5 +1,6 @@
 from .figure import Figure
 from .plotter import Plotter
+from .traces import Scatter, Histogram
 import plotly.graph_objects as go
 import plotly
 import numpy as np
@@ -70,170 +71,172 @@ class PlotlyPlotter(Plotter):
 	
 	def draw_traces(self):
 		traces_drawing_methods = {
-			'scatter': self.draw_scatter,
-			'histogram': self.draw_histogram,
-			'heatmap': self.draw_heatmap,
-			'contour': self.draw_contour,
+			Scatter: self.draw_scatter,
+			Histogram: self.draw_histogram,
+			# ~ 'heatmap': self.draw_heatmap,
+			# ~ 'contour': self.draw_contour,
 		}
 		for trace in self.parent_figure.traces:
-			if trace['type'] not in traces_drawing_methods:
-				raise RuntimeError(f"Don't know how to draw a <{trace['type']}> trace...")
-			traces_drawing_methods[trace['type']](trace)
+			if type(trace) not in traces_drawing_methods:
+				raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
+			traces_drawing_methods[type(trace)](trace)
 	
-	def draw_scatter(self, scatter):
-		"""Draws a scatter plot created by super().scatter."""
+	def draw_scatter(self, scatter: Scatter):
+		if not isinstance(scatter, Scatter):
+			raise TypeError(f'<scatter> must be an instance of Scatter, received object of type {type(scatter)}.')
 		self.plotly_figure.add_trace(
 			go.Scatter(
-				x = scatter['data']['x'],
-				y = scatter['data']['y'],
-				name = scatter.get('label'),
-				opacity = scatter.get('alpha'),
-				mode = translate_marker_and_linestyle_to_Plotly_mode(scatter.get('marker'), scatter.get('linestyle')),
-				marker_symbol = map_marker_to_Plotly_markers(scatter.get('marker')),
-				showlegend = True if scatter.get('label') != None else False,
+				x = scatter.x,
+				y = scatter.y,
+				name = scatter.label,
+				opacity = scatter.alpha,
+				mode = translate_marker_and_linestyle_to_Plotly_mode(scatter.marker, scatter.linestyle),
+				marker_symbol = map_marker_to_Plotly_markers(scatter.marker),
+				showlegend = True if scatter.label is not None else False,
 				line = dict(
-					dash = map_linestyle_to_Plotly_linestyle(scatter.get('linestyle')),
+					dash = map_linestyle_to_Plotly_linestyle(scatter.linestyle),
 				)
 			)
 		)
-		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(scatter.get('color'))
-		self.plotly_figure['data'][-1]['line']['width'] = scatter.get('linewidth')
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(scatter.color)
+		self.plotly_figure['data'][-1]['line']['width'] = scatter.linewidth
 	
 	def draw_histogram(self, histogram):
-		"""Draws a histogram plot created by super().histogram."""
-		x = np.array(histogram['data']['x']) # Make a copy to avoid touching the original data.
+		if not isinstance(histogram, Histogram):
+			raise TypeError(f'<histogram> must be an instance of Histogram, received object of type {type(histogram)}.')
+		x = np.array(histogram.x) # Make a copy to avoid touching the original data.
 		x[0] = x[1] - (x[3]-x[1]) # Plotly does not plot points in infinity.
 		x[-1] = x[-2] + (x[-2]-x[-4]) # Plotly does not plot points in infinity.
 		legendgroup = str(np.random.rand(3))
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = x, 
-				y = histogram['data']['y'],
-				opacity = histogram.get('alpha'),
+				y = histogram.y,
+				opacity = histogram.alpha,
 				mode = 'lines',
 				line = dict(
-					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+					dash = map_linestyle_to_Plotly_linestyle(histogram.linestyle),
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
 				hoverinfo='skip',
 			)
 		)
-		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
-		self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
-		if histogram.get('marker') is not None:
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
+		self.plotly_figure['data'][-1]['line']['width'] = histogram.linewidth
+		if histogram.marker is not None:
 			self.plotly_figure.add_traces(
 				go.Scatter(
 					x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))],
-					y = histogram['data']['y'][::2],
-					name = histogram.get('label'),
+					y = histogram.y[::2],
+					name = histogram.label,
 					mode = 'markers',
-					marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
-					opacity = histogram.get('alpha'),
+					marker_symbol = map_marker_to_Plotly_markers(histogram.marker),
+					opacity = histogram.alpha,
 					line = dict(
-						dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+						dash = map_linestyle_to_Plotly_linestyle(histogram.linestyle),
 					),
 					legendgroup = legendgroup,
 					hoverinfo = 'skip',
 					showlegend = False,
 				)
 			)
-			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))],
-				y = histogram['data']['y'][::2],
-				name = histogram.get('label'),
+				y = histogram.y[::2],
+				name = histogram.label,
 				mode = 'lines',
-				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
-				opacity = histogram.get('alpha'),
+				marker_symbol = map_marker_to_Plotly_markers(histogram.marker),
+				opacity = histogram.alpha,
 				line = dict(
-					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+					dash = map_linestyle_to_Plotly_linestyle(histogram.linestyle),
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
-				text = [f'Bin: [-∞, {histogram["data"]["bin_edges"][0]:.2e}]<br>Count: {histogram["data"]["bin_count"][0]:.2e}'] + [f'Bin: [{histogram["data"]["bin_edges"][i]:.2e}, {histogram["data"]["bin_edges"][i+1]:.2e}]<br>Count: {histogram["data"]["bin_count"][i]:.2e}' for i in range(len(histogram["data"]["bin_edges"])-1)] + [f'Bin: [{histogram["data"]["bin_edges"][-1]:.2e},∞]<br>Count: {histogram["data"]["bin_count"][-1]:.2e}'],
+				text = [f'Bin: [-∞, {histogram.bin_edges[0]:.2e}]<br>Count: {histogram.bin_counts[0]:.2e}'] + [f'Bin: [{histogram.bin_edges[i]:.2e}, {histogram.bin_edges[i+1]:.2e}]<br>Count: {histogram.bin_counts[i]:.2e}' for i in range(len(histogram.bin_edges)-1)] + [f'Bin: [{histogram.bin_edges[-1]:.2e},∞]<br>Count: {histogram.bin_counts[-1]:.2e}'],
 				hovertemplate = "%{text}",
 			)
 		)
-		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure['data'][-1]['line']['width'] = 0
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = [0],
 				y = [float('NaN')],
-				name = histogram.get('label'),
-				mode = translate_marker_and_linestyle_to_Plotly_mode(histogram.get('marker'), histogram.get('linestyle')),
-				marker_symbol = map_marker_to_Plotly_markers(histogram.get('marker')),
-				opacity = histogram.get('alpha'),
-				showlegend = True if histogram.get('label') != None else False,
+				name = histogram.label,
+				mode = translate_marker_and_linestyle_to_Plotly_mode(histogram.marker, histogram.linestyle),
+				marker_symbol = map_marker_to_Plotly_markers(histogram.marker),
+				opacity = histogram.alpha,
+				showlegend = True if histogram.label != None else False,
 				line = dict(
-					dash = map_linestyle_to_Plotly_linestyle(histogram.get('linestyle')),
+					dash = map_linestyle_to_Plotly_linestyle(histogram.linestyle),
 				),
 				legendgroup = legendgroup,
 			)
 		)
-		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.get('color'))
-		self.plotly_figure['data'][-1]['line']['width'] = histogram.get('linewidth')
+		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
+		self.plotly_figure['data'][-1]['line']['width'] = histogram.linewidth
 	
-	def draw_heatmap(self, heatmap):
-		x = heatmap['data']['x']
-		y = heatmap['data']['y']
-		z = heatmap['data']['z']
-		if heatmap.get('zscale') == 'log' and (z<=0).any():
-			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
-			with warnings.catch_warnings():
-				warnings.filterwarnings("ignore", message="invalid value encountered in log")
-				z = np.log(z)
-		self.plotly_figure.add_trace(
-			go.Heatmap(
-				x = x,
-				y = y,
-				z = z,
-				opacity = heatmap.get('alpha'),
-				zmin = heatmap.get('zlim')[0] if heatmap.get('zlim') is not None else None,
-				zmax = heatmap.get('zlim')[1] if heatmap.get('zlim') is not None else None,
-				colorbar = dict(
-					title = ('log ' if heatmap.get('zscale') == 'log' else '') + (heatmap.get('zlabel') if heatmap.get('zlabel') is not None else ''),
-					titleside = 'right',
-				),
-				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap["zlabel"] if heatmap.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
-			)
-		)
-		self.plotly_figure.update_layout(legend_orientation="h")
+	# ~ def draw_heatmap(self, heatmap):
+		# ~ x = heatmap['data']['x']
+		# ~ y = heatmap['data']['y']
+		# ~ z = heatmap['data']['z']
+		# ~ if heatmap.get('zscale') == 'log' and (z<=0).any():
+			# ~ warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			# ~ with warnings.catch_warnings():
+				# ~ warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				# ~ z = np.log(z)
+		# ~ self.plotly_figure.add_trace(
+			# ~ go.Heatmap(
+				# ~ x = x,
+				# ~ y = y,
+				# ~ z = z,
+				# ~ opacity = heatmap.get('alpha'),
+				# ~ zmin = heatmap.get('zlim')[0] if heatmap.get('zlim') is not None else None,
+				# ~ zmax = heatmap.get('zlim')[1] if heatmap.get('zlim') is not None else None,
+				# ~ colorbar = dict(
+					# ~ title = ('log ' if heatmap.get('zscale') == 'log' else '') + (heatmap.get('zlabel') if heatmap.get('zlabel') is not None else ''),
+					# ~ titleside = 'right',
+				# ~ ),
+				# ~ hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap["zlabel"] if heatmap.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+			# ~ )
+		# ~ )
+		# ~ self.plotly_figure.update_layout(legend_orientation="h")
 	
-	def draw_contour(self, contour):
-		x = contour['data']['x']
-		y = contour['data']['y']
-		z = contour['data']['z']
-		if contour.get('zscale') == 'log' and (z<=0).any():
-			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
-			with warnings.catch_warnings():
-				warnings.filterwarnings("ignore", message="invalid value encountered in log")
-				z = np.log(z)
-		self.plotly_figure.add_trace(
-			go.Contour(
-				x = x,
-				y = y,
-				z = z,
-				opacity = contour.get('alpha'),
-				zmin = contour.get('zlim')[0] if contour.get('zlim') is not None else None,
-				zmax = contour.get('zlim')[1] if contour.get('zlim') is not None else None,
-				colorbar = dict(
-					title = ('log ' if contour.get('zscale') == 'log' else '') + (contour.get('zlabel') if contour.get('zlabel') is not None else ''),
-					titleside = 'right',
-				),
-				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(contour["zlabel"] if contour.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>',
-				contours=dict(
-					coloring = 'heatmap',
-					showlabels = True, # show labels on contours
-					labelfont = dict( # label font properties
-						color = 'black',
-					)
-				)
-			)
-		)
-		self.plotly_figure.update_layout(legend_orientation="h")
+	# ~ def draw_contour(self, contour):
+		# ~ x = contour['data']['x']
+		# ~ y = contour['data']['y']
+		# ~ z = contour['data']['z']
+		# ~ if contour.get('zscale') == 'log' and (z<=0).any():
+			# ~ warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			# ~ with warnings.catch_warnings():
+				# ~ warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				# ~ z = np.log(z)
+		# ~ self.plotly_figure.add_trace(
+			# ~ go.Contour(
+				# ~ x = x,
+				# ~ y = y,
+				# ~ z = z,
+				# ~ opacity = contour.get('alpha'),
+				# ~ zmin = contour.get('zlim')[0] if contour.get('zlim') is not None else None,
+				# ~ zmax = contour.get('zlim')[1] if contour.get('zlim') is not None else None,
+				# ~ colorbar = dict(
+					# ~ title = ('log ' if contour.get('zscale') == 'log' else '') + (contour.get('zlabel') if contour.get('zlabel') is not None else ''),
+					# ~ titleside = 'right',
+				# ~ ),
+				# ~ hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(contour["zlabel"] if contour.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>',
+				# ~ contours=dict(
+					# ~ coloring = 'heatmap',
+					# ~ showlabels = True, # show labels on contours
+					# ~ labelfont = dict( # label font properties
+						# ~ color = 'black',
+					# ~ )
+				# ~ )
+			# ~ )
+		# ~ )
+		# ~ self.plotly_figure.update_layout(legend_orientation="h")
 		
 def translate_marker_and_linestyle_to_Plotly_mode(marker, linestyle):
 	"""<marker> and <linestyle> are each one and only one of the valid

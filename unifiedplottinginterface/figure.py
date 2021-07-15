@@ -1,5 +1,5 @@
 import numpy as np
-from .validation import validate_kwargs
+from .traces import Trace, Scatter, Histogram
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -89,24 +89,18 @@ class Figure:
 			setattr(self, f'{key}', kwargs[key])
 	# ------------------------------------------------------------------
 	
-	def scatter(self, x, y, **kwargs):
-		"""Given two iterables <x> and <y> produces a scatter plot.
-		kwargs: Any of {'label','color','marker','linestyle','linewidth',
-		'alpha'} is supported. Additional arguments rise a ValueError.
-		"""
-		if kwargs.get('color') is None:
-			kwargs['color'] = self.pick_default_color()
-		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
-		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
-			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
-		if len(x) != len(y):
-			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
-		trace = {'type': 'scatter', 'data': {'x':x,'y':y}}
-		for arg in kwargs:
-			trace[arg] = kwargs[arg]
+	def add_trace(self, trace):
+		if not isinstance(trace, Trace):
+			raise TypeError(f'<trace> must be an instance of Trace, received an object of type {type(trace)}')
 		self.traces.append(trace)
 	
-	def histogram(self, samples, density=False, bins='auto', **kwargs):
+	def scatter(self, x, y, **kwargs):
+		"""Given two iterables <x> and <y> produces a scatter plot in the xy plane."""
+		if kwargs.get('color') is None:
+			kwargs['color'] = self.pick_default_color()
+		self.add_trace(Scatter(x, y, **kwargs))
+	
+	def histogram(self, samples, **kwargs):
 		"""Given a collection of sample data <x> produces a histogram
 		plot.
 		samples: Array like containing the data.
@@ -116,125 +110,100 @@ class Figure:
 		'alpha'} is supported."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
-		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
-		if not hasattr(samples, '__iter__'):
-			raise ValueError(f'<samples> must be iterable.')
-		samples = np.array(samples)
-		hist, bin_edges = np.histogram(
-			samples[~np.isnan(samples)], 
-			bins = bins,
-			density = density,
-		)
-		x = [-float('inf')]
-		y = [sum(samples<bin_edges[0])]
-		for idx,count in enumerate(hist):
-			x.append(bin_edges[idx])
-			x.append(bin_edges[idx])
-			y.append(y[-1])
-			y.append(count)
-		x.append(bin_edges[-1])
-		y.append(y[-1])
-		x.append(bin_edges[-1])
-		y.append(sum(samples>bin_edges[-1]))
-		x.append(float('inf'))
-		y.append(y[-1])
-		trace = {'type': 'histogram', 'data': {'x':np.array(x),'y':np.array(y), 'bin_edges': np.array(bin_edges), 'bin_count': np.array([y[0]] + list(hist) + [y[-1]])}}
-		for arg in kwargs:
-			trace[arg] = kwargs[arg]
-		self.traces.append(trace)
+		self.add_trace(Histogram(samples, **kwargs))
 	
-	def heatmap(self, x, y, z, zscale='lin', zlabel=None, zlim=None, **kwargs):
-		"""Produces a 2D colored heatmap in Cartesian coordinates. z is 
-		the color dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a color. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter.
-		- zlabel: A string with the label for the z dimension.
-		- zscale: Either 'lin' or 'log' for linear or logarithmic.
-		- zlim: (zmin, zmax) 
-		- kwargs:
-			- alpha: A float specifying the transparency."""
-		# Validation of arguments ---
-		kwargs = validate_kwargs({'alpha'}, kwargs)
-		if zscale not in _VALID_AXIS_SCALES:
-			raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
-		if zlabel is not None and not isinstance(zlabel, str):
-			raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
-		if zlim is not None:
-			try:
-				zlim = tuple(zlim)
-				if len(zlim) != 2:
-					raise ValueError() # Don't care, then I catch all and rise a unique error.
-				zlim = tuple([float(_) for _ in zlim])
-			except:
-				raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
-		_x = np.array(x)
-		_y = np.array(y)
-		_z = np.array(z)
-		if any([xy.ndim != 1 for xy in [_x,_y]]):
-			raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
-		if _z.ndim != 2:
-			raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
-		if _z.shape != (len(y),len(x)):
-			raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
-		# Arguments are validated ---
-		heatmap_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim}
-		trace = {'type': 'heatmap', 'data': {'x':_x,'y':_y, 'z': _z}}
-		for k,v in {**kwargs, **heatmap_specific_arguments}.items():
-			trace[k] = v
-		self.traces.append(trace)
+	# ~ def heatmap(self, x, y, z, zscale='lin', zlabel=None, zlim=None, **kwargs):
+		# ~ """Produces a 2D colored heatmap in Cartesian coordinates. z is 
+		# ~ the color dimension.
+		# ~ - x, y: One dimensional arrays with the xy values respectively.
+		# ~ - z: Two dimensional array containing the magnitude that will be 
+		# ~ translated into a color. The shape of z must be (len(y),len(x)).
+		# ~ What happens with NaN or missing values is a problem of the specific
+		# ~ plotter.
+		# ~ - zlabel: A string with the label for the z dimension.
+		# ~ - zscale: Either 'lin' or 'log' for linear or logarithmic.
+		# ~ - zlim: (zmin, zmax) 
+		# ~ - kwargs:
+			# ~ - alpha: A float specifying the transparency."""
+		# ~ # Validation of arguments ---
+		# ~ kwargs = validate_kwargs({'alpha'}, kwargs)
+		# ~ if zscale not in _VALID_AXIS_SCALES:
+			# ~ raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
+		# ~ if zlabel is not None and not isinstance(zlabel, str):
+			# ~ raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
+		# ~ if zlim is not None:
+			# ~ try:
+				# ~ zlim = tuple(zlim)
+				# ~ if len(zlim) != 2:
+					# ~ raise ValueError() # Don't care, then I catch all and rise a unique error.
+				# ~ zlim = tuple([float(_) for _ in zlim])
+			# ~ except:
+				# ~ raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
+		# ~ _x = np.array(x)
+		# ~ _y = np.array(y)
+		# ~ _z = np.array(z)
+		# ~ if any([xy.ndim != 1 for xy in [_x,_y]]):
+			# ~ raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
+		# ~ if _z.ndim != 2:
+			# ~ raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
+		# ~ if _z.shape != (len(y),len(x)):
+			# ~ raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
+		# ~ # Arguments are validated ---
+		# ~ heatmap_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim}
+		# ~ trace = {'type': 'heatmap', 'data': {'x':_x,'y':_y, 'z': _z}}
+		# ~ for k,v in {**kwargs, **heatmap_specific_arguments}.items():
+			# ~ trace[k] = v
+		# ~ self.traces.append(trace)
 	
-	def contour(self, x, y, z, zscale='lin', zlabel=None, zlim=None, contours=None, **kwargs):
-		"""Produces a 2D contour plot in Cartesian coordinates. z is 
-		the "height" dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a height. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter.
-		- zlabel: A string with the label for the z dimension.
-		- zscale: Either 'lin' or 'log' for linear or logarithmic.
-		- zlim: (zmin, zmax).
-		- contours: Integer number stating number of contours to plot.
-		with the specific contours to use.
-		- kwargs:
-			- alpha: A float specifying the transparency."""
-		# Validation of arguments ---
-		kwargs = validate_kwargs({'alpha'}, kwargs)
-		if zscale not in _VALID_AXIS_SCALES:
-			raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
-		if zlabel is not None and not isinstance(zlabel, str):
-			raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
-		if zlim is not None:
-			try:
-				zlim = tuple(zlim)
-				if len(zlim) != 2:
-					raise ValueError() # Don't care, then I catch all and rise a unique error.
-				zlim = tuple([float(_) for _ in zlim])
-			except:
-				raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
-		_x = np.array(x)
-		_y = np.array(y)
-		_z = np.array(z)
-		if any([xy.ndim != 1 for xy in [_x,_y]]):
-			raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
-		if _z.ndim != 2:
-			raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
-		if _z.shape != (len(y),len(x)):
-			raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
-		if contours is not None:
-			try:
-				contours = int(contours)
-			except:
-				raise TypeError(f'<contours> must be an integer number, received an object of type {type(contours)}.')
-		# Arguments are validated ---
-		contour_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim, 'contours': contours}
-		trace = {'type': 'contour', 'data': {'x':_x,'y':_y, 'z': _z}}
-		for k,v in {**kwargs, **contour_specific_arguments}.items():
-			trace[k] = v
-		self.traces.append(trace)
+	# ~ def contour(self, x, y, z, zscale='lin', zlabel=None, zlim=None, contours=None, **kwargs):
+		# ~ """Produces a 2D contour plot in Cartesian coordinates. z is 
+		# ~ the "height" dimension.
+		# ~ - x, y: One dimensional arrays with the xy values respectively.
+		# ~ - z: Two dimensional array containing the magnitude that will be 
+		# ~ translated into a height. The shape of z must be (len(y),len(x)).
+		# ~ What happens with NaN or missing values is a problem of the specific
+		# ~ plotter.
+		# ~ - zlabel: A string with the label for the z dimension.
+		# ~ - zscale: Either 'lin' or 'log' for linear or logarithmic.
+		# ~ - zlim: (zmin, zmax).
+		# ~ - contours: Integer number stating number of contours to plot.
+		# ~ with the specific contours to use.
+		# ~ - kwargs:
+			# ~ - alpha: A float specifying the transparency."""
+		# ~ # Validation of arguments ---
+		# ~ kwargs = validate_kwargs({'alpha'}, kwargs)
+		# ~ if zscale not in _VALID_AXIS_SCALES:
+			# ~ raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
+		# ~ if zlabel is not None and not isinstance(zlabel, str):
+			# ~ raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
+		# ~ if zlim is not None:
+			# ~ try:
+				# ~ zlim = tuple(zlim)
+				# ~ if len(zlim) != 2:
+					# ~ raise ValueError() # Don't care, then I catch all and rise a unique error.
+				# ~ zlim = tuple([float(_) for _ in zlim])
+			# ~ except:
+				# ~ raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
+		# ~ _x = np.array(x)
+		# ~ _y = np.array(y)
+		# ~ _z = np.array(z)
+		# ~ if any([xy.ndim != 1 for xy in [_x,_y]]):
+			# ~ raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
+		# ~ if _z.ndim != 2:
+			# ~ raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
+		# ~ if _z.shape != (len(y),len(x)):
+			# ~ raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
+		# ~ if contours is not None:
+			# ~ try:
+				# ~ contours = int(contours)
+			# ~ except:
+				# ~ raise TypeError(f'<contours> must be an integer number, received an object of type {type(contours)}.')
+		# ~ # Arguments are validated ---
+		# ~ contour_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim, 'contours': contours}
+		# ~ trace = {'type': 'contour', 'data': {'x':_x,'y':_y, 'z': _z}}
+		# ~ for k,v in {**kwargs, **contour_specific_arguments}.items():
+			# ~ trace[k] = v
+		# ~ self.traces.append(trace)
 	# ------------------------------------------------------------------
 	
 	DEFAULT_COLORS = [

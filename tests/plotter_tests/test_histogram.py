@@ -31,6 +31,6 @@ fig.histogram(
 	bins = bins,
 )
 
-for plotter in upi.manager.plotters:
+for plotter in {'plotly'}:# upi.manager.plotters:
 	upi.manager.draw(plotter=plotter)
 upi.manager.save(mkdir=True)
