@@ -56,6 +56,6 @@ fig.heatmap(
 	zlim = (.5,1.5),
 )
 
-for plotter in upi.manager.plotters:
+for plotter in {'plotly'}:#upi.manager.plotters:
 	upi.manager.draw(plotter=plotter)
 upi.manager.save(mkdir=True)

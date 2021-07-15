@@ -1,6 +1,6 @@
 from .figure import Figure
 from .plotter import Plotter
-from .traces import Scatter, Histogram
+from .traces import Scatter, Histogram, Heatmap
 import plotly.graph_objects as go
 import plotly
 import numpy as np
@@ -73,7 +73,7 @@ class PlotlyPlotter(Plotter):
 		traces_drawing_methods = {
 			Scatter: self.draw_scatter,
 			Histogram: self.draw_histogram,
-			# ~ 'heatmap': self.draw_heatmap,
+			Heatmap: self.draw_heatmap,
 			# ~ 'contour': self.draw_contour,
 		}
 		for trace in self.parent_figure.traces:
@@ -179,31 +179,33 @@ class PlotlyPlotter(Plotter):
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure['data'][-1]['line']['width'] = histogram.linewidth
 	
-	# ~ def draw_heatmap(self, heatmap):
-		# ~ x = heatmap['data']['x']
-		# ~ y = heatmap['data']['y']
-		# ~ z = heatmap['data']['z']
-		# ~ if heatmap.get('zscale') == 'log' and (z<=0).any():
-			# ~ warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
-			# ~ with warnings.catch_warnings():
-				# ~ warnings.filterwarnings("ignore", message="invalid value encountered in log")
-				# ~ z = np.log(z)
-		# ~ self.plotly_figure.add_trace(
-			# ~ go.Heatmap(
-				# ~ x = x,
-				# ~ y = y,
-				# ~ z = z,
-				# ~ opacity = heatmap.get('alpha'),
-				# ~ zmin = heatmap.get('zlim')[0] if heatmap.get('zlim') is not None else None,
-				# ~ zmax = heatmap.get('zlim')[1] if heatmap.get('zlim') is not None else None,
-				# ~ colorbar = dict(
-					# ~ title = ('log ' if heatmap.get('zscale') == 'log' else '') + (heatmap.get('zlabel') if heatmap.get('zlabel') is not None else ''),
-					# ~ titleside = 'right',
-				# ~ ),
-				# ~ hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap["zlabel"] if heatmap.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
-			# ~ )
-		# ~ )
-		# ~ self.plotly_figure.update_layout(legend_orientation="h")
+	def draw_heatmap(self, heatmap):
+		if not isinstance(heatmap, Heatmap):
+			raise TypeError(f'<heatmap> must be an instance of Heatmap, received object of type {type(heatmap)}.')
+		x = heatmap.x
+		y = heatmap.y
+		z = heatmap.z
+		if heatmap.zscale == 'log' and (z<=0).any():
+			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			with warnings.catch_warnings():
+				warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				z = np.log(z)
+		self.plotly_figure.add_trace(
+			go.Heatmap(
+				x = x,
+				y = y,
+				z = z,
+				opacity = heatmap.alpha,
+				zmin = heatmap.zlim[0] if heatmap.zlim is not None else None,
+				zmax = heatmap.zlim[1] if heatmap.zlim is not None else None,
+				colorbar = dict(
+					title = ('log ' if heatmap.zscale == 'log' else '') + (heatmap.zlabel if heatmap.zlabel is not None else ''),
+					titleside = 'right',
+				),
+				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap.zlabel if heatmap.zlabel is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+			)
+		)
+		self.plotly_figure.update_layout(legend_orientation="h")
 	
 	# ~ def draw_contour(self, contour):
 		# ~ x = contour['data']['x']

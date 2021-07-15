@@ -1,5 +1,5 @@
 import numpy as np
-from .traces import Trace, Scatter, Histogram
+from .traces import Trace, Scatter, Histogram, Heatmap
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -101,59 +101,21 @@ class Figure:
 		self.add_trace(Scatter(x, y, **kwargs))
 	
 	def histogram(self, samples, **kwargs):
-		"""Given a collection of sample data <x> produces a histogram
-		plot.
-		samples: Array like containing the data.
-		density: Same behavior as density argument of numpy.histogram function.
-		bins: Same behavior as the bins argument of numpy.histogram function.
-		kwargs: Any of {'label','color','marker','linestyle','linewidth',
-		'alpha'} is supported."""
+		"""Given a collection of sample data <x> produces a histogram plot.
+		samples: Array like containing the data."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
 		self.add_trace(Histogram(samples, **kwargs))
 	
-	# ~ def heatmap(self, x, y, z, zscale='lin', zlabel=None, zlim=None, **kwargs):
-		# ~ """Produces a 2D colored heatmap in Cartesian coordinates. z is 
-		# ~ the color dimension.
-		# ~ - x, y: One dimensional arrays with the xy values respectively.
-		# ~ - z: Two dimensional array containing the magnitude that will be 
-		# ~ translated into a color. The shape of z must be (len(y),len(x)).
-		# ~ What happens with NaN or missing values is a problem of the specific
-		# ~ plotter.
-		# ~ - zlabel: A string with the label for the z dimension.
-		# ~ - zscale: Either 'lin' or 'log' for linear or logarithmic.
-		# ~ - zlim: (zmin, zmax) 
-		# ~ - kwargs:
-			# ~ - alpha: A float specifying the transparency."""
-		# ~ # Validation of arguments ---
-		# ~ kwargs = validate_kwargs({'alpha'}, kwargs)
-		# ~ if zscale not in _VALID_AXIS_SCALES:
-			# ~ raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
-		# ~ if zlabel is not None and not isinstance(zlabel, str):
-			# ~ raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
-		# ~ if zlim is not None:
-			# ~ try:
-				# ~ zlim = tuple(zlim)
-				# ~ if len(zlim) != 2:
-					# ~ raise ValueError() # Don't care, then I catch all and rise a unique error.
-				# ~ zlim = tuple([float(_) for _ in zlim])
-			# ~ except:
-				# ~ raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
-		# ~ _x = np.array(x)
-		# ~ _y = np.array(y)
-		# ~ _z = np.array(z)
-		# ~ if any([xy.ndim != 1 for xy in [_x,_y]]):
-			# ~ raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
-		# ~ if _z.ndim != 2:
-			# ~ raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
-		# ~ if _z.shape != (len(y),len(x)):
-			# ~ raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
-		# ~ # Arguments are validated ---
-		# ~ heatmap_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim}
-		# ~ trace = {'type': 'heatmap', 'data': {'x':_x,'y':_y, 'z': _z}}
-		# ~ for k,v in {**kwargs, **heatmap_specific_arguments}.items():
-			# ~ trace[k] = v
-		# ~ self.traces.append(trace)
+	def heatmap(self, x, y, z, **kwargs):
+		"""Produces a 2D colored heatmap in Cartesian coordinates. z is 
+		the color dimension.
+		- x, y: One dimensional arrays with the xy values respectively.
+		- z: Two dimensional array containing the magnitude that will be 
+		translated into a color. The shape of z must be (len(y),len(x)).
+		What happens with NaN or missing values is a problem of the specific
+		plotter."""
+		self.add_trace(Heatmap(x,y,z,**kwargs))
 	
 	# ~ def contour(self, x, y, z, zscale='lin', zlabel=None, zlim=None, contours=None, **kwargs):
 		# ~ """Produces a 2D contour plot in Cartesian coordinates. z is 
