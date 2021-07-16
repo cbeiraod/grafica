@@ -10,7 +10,10 @@ class Trace:
 	
 	@property
 	def label(self):
-		return self._label
+		if hasattr(self, '_label'):
+			return self._label
+		else:
+			return None
 
 class Scatter(Trace):
 	def __init__(self, x, y, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None):
