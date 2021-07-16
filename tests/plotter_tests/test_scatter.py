@@ -1,8 +1,10 @@
-import unifiedplottinginterface as upi
+from unifiedplottinginterface.FigureManager import FigureManager
 import numpy as np
 
 x = np.linspace(1,2,9)
-fig = upi.manager.new(
+
+FM = FigureManager()
+fig = FM.new(
 	title = 'Markers and linestyles',
 	yscale = 'log',
 )
@@ -16,7 +18,7 @@ for idx_marker,marker in enumerate({'.','o','+','x','*', None}):
 			linestyle = linestyle,
 		)
 
-fig = upi.manager.new(
+fig = FM.new(
 	title = 'Colors',
 )
 for idx,color in enumerate({(0,0,0),(1,0,0),(255,0,0)}):
@@ -28,7 +30,7 @@ for idx,color in enumerate({(0,0,0),(1,0,0),(255,0,0)}):
 		marker = '.',
 	)
 
-fig = upi.manager.new(
+fig = FM.new(
 	title = 'Alpha',
 	aspect = 'equal',
 )
@@ -40,7 +42,7 @@ fig.scatter(
 	marker = '.',
 )
 
-fig = upi.manager.new(
+fig = FM.new(
 	title = 'Linewidth',
 )
 for idx,linewidth in enumerate([.5,1,3,6,None]):
@@ -60,6 +62,4 @@ for idx,linewidth in enumerate([.5,1,3,6,None]):
 			color = (0,0,1),
 		)
 
-for plotter in {'plotly'}:# upi.manager.plotters:
-	upi.manager.draw(plotter=plotter)
-upi.manager.save(mkdir=True)
+FM.save(mkdir=True)
