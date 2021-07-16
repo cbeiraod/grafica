@@ -1,12 +1,10 @@
-from unifiedplottinginterface.FigureManager import FigureManager
+import unifiedplottinginterface as upi
 import numpy as np
-
-FM = FigureManager()
 
 samples = np.random.randn(999)
 
-for plotter in FM.plotters:
-	fig = FM.new(
+for plotter in upi.manager.plotters:
+	fig = upi.manager.new(
 		title = 'Histogram',
 		subtitle = 'All the traces use the exact same data',
 		plotter_name = plotter,
@@ -36,4 +34,4 @@ for plotter in FM.plotters:
 		bins = bins,
 	)
 
-FM.save(mkdir=True)
+upi.manager.save(mkdir=True)

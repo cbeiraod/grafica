@@ -1,12 +1,10 @@
-from unifiedplottinginterface.FigureManager import FigureManager
+import unifiedplottinginterface as upi
 import numpy as np
-
-FM = FigureManager()
 
 x = np.linspace(1,2,9)
 
-for plotter in FM.plotters:
-	fig = FM.new(
+for plotter in upi.manager.plotters:
+	fig = upi.manager.new(
 		title = 'Markers and linestyles',
 		yscale = 'log',
 		plotter_name = plotter,
@@ -21,7 +19,7 @@ for plotter in FM.plotters:
 				linestyle = linestyle,
 			)
 
-	fig = FM.new(
+	fig = upi.manager.new(
 		title = 'Colors',
 		plotter_name = plotter,
 	)
@@ -34,7 +32,7 @@ for plotter in FM.plotters:
 			marker = '.',
 		)
 
-	fig = FM.new(
+	fig = upi.manager.new(
 		title = 'Alpha',
 		aspect = 'equal',
 		plotter_name = plotter,
@@ -47,7 +45,7 @@ for plotter in FM.plotters:
 		marker = '.',
 	)
 
-	fig = FM.new(
+	fig = upi.manager.new(
 		title = 'Linewidth',
 		plotter_name = plotter,
 	)
@@ -68,4 +66,4 @@ for plotter in FM.plotters:
 				color = (0,0,1),
 			)
 
-FM.save(mkdir=True)
+upi.manager.save(mkdir=True)
