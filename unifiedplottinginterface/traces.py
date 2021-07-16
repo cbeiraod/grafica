@@ -19,7 +19,14 @@ class Trace:
 
 class Scatter(Trace):
 	def __init__(self, x, y, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None):
-		"""A Scatter trace is a line in an xy plane given by two arrays of points x=[x1,x2,...] and y=[y1,y2,...]."""
+		"""A Scatter trace is a line in an xy plane given by two arrays 
+		of points x=[x1,x2,...] and y=[y1,y2,...].
+		- color: RGB tuple.
+		- marker: One of {'.','o','+','x','*', None}.
+		- linestyle: One of {'solid','dotted','dashed', 'none', None}.
+		- linewidth: Float number.
+		- alpha: Float number.
+		- label: String."""
 		super().__init__(label)
 		self._color = validate_color(color)
 		self._marker = validate_marker(marker)
@@ -61,7 +68,15 @@ class Scatter(Trace):
 
 class Histogram(Trace):
 	def __init__(self, samples, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None, density=False, bins='auto'):
-		"""We all know what a histogram is."""
+		"""Given an array of samples produces a histogram.
+		- color: RGB tuple.
+		- marker: One of {'.','o','+','x','*', None}.
+		- linestyle: One of {'solid','dotted','dashed', 'none', None}.
+		- linewidth: Float number.
+		- alpha: Float number.
+		- label: String.
+		- density: Same as homonym argument in numpy.histogram.
+		- bins: Same as homonym argument in numpy.histogram."""
 		super().__init__(label)
 		self._color = validate_color(color)
 		self._marker = validate_marker(marker)
@@ -135,6 +150,14 @@ class Histogram(Trace):
 
 class Heatmap(Trace):
 	def __init__(self, x, y, z, zscale='lin', zlabel=None, zlim=None, alpha=1, label=None):
+		"""Produces a 2D colored heat map.
+		- x,y: 1D arrays containing the x and y Cartesian values.
+		- z: 2D array containing the value at each (x,y).
+		- zscale: One of {'lin', 'log'}.
+		- zlabel: String with the label to put next to the colorbar (like xlabel or ylabel).
+		- zlim: Tuple of the form (zmin, zmax).
+		- alpha: Real number for the transparency.
+		- label: A label for this heatmap, to distinguish it from other heatmaps."""
 		super().__init__(label)
 		self._alpha = validate_alpha(alpha)
 		if zscale not in VALID_ZSCALES:
@@ -199,6 +222,15 @@ class Heatmap(Trace):
 
 class Contour(Trace):
 	def __init__(self, x, y, z, zscale='lin', zlabel=None, zlim=None, alpha=1, contours=None, label=None):
+		"""Produces a 2D colored heat map.
+		- x,y: 1D arrays containing the x and y Cartesian values.
+		- z: 2D array containing the value at each (x,y).
+		- zscale: One of {'lin', 'log'}.
+		- zlabel: String with the label to put next to the colorbar (like xlabel or ylabel).
+		- zlim: Tuple of the form (zmin, zmax).
+		- alpha: Real number for the transparency.
+		- contours: Integer specifying the number of contours or iterable containing the values for the contour levels.
+		- label: A label for this contour, to distinguish it from other contours."""
 		super().__init__(label)
 		self._alpha = validate_alpha(alpha)
 		if zscale not in VALID_ZSCALES:

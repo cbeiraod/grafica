@@ -152,14 +152,16 @@ class Figure:
 	# Methods to ease the life of the user -----------------------------
 	
 	def scatter(self, x, y, **kwargs):
-		"""Given two iterables <x> and <y> produces a scatter plot in the xy plane."""
+		"""A Scatter trace is a line in an xy plane given by two arrays 
+		of points x=[x1,x2,...] and y=[y1,y2,...].
+		For optional kwargs see documentation of traces.Scatter."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
 		self.add_trace(Scatter(x, y, **kwargs))
 	
 	def histogram(self, samples, **kwargs):
-		"""Given a collection of sample data <x> produces a histogram plot.
-		samples: Array like containing the data."""
+		"""Given an array of samples produces a histogram.
+		For optional kwargs see documentation of traces.Histogram."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
 		self.add_trace(Histogram(samples, **kwargs))
@@ -167,21 +169,15 @@ class Figure:
 	def heatmap(self, x, y, z, **kwargs):
 		"""Produces a 2D colored heatmap in Cartesian coordinates. z is 
 		the color dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a color. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter."""
+		For information on x, y, z and kwargs see documentation of 
+		traces.Heatmap."""
 		self.add_trace(Heatmap(x,y,z,**kwargs))
 	
 	def contour(self, x, y, z, **kwargs):
 		"""Produces a 2D contour plot in Cartesian coordinates. z is 
 		the "height" dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a height. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter."""
+		For information on x, y, z and kwargs see documentation of 
+		traces.Contour."""
 		self.add_trace(Contour(x,y,z,**kwargs))
 	# ------------------------------------------------------------------
 	
