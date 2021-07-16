@@ -10,6 +10,8 @@ class PlotlyFigure(Figure):
 		super().__init__()
 		self.plotly_figure = go.Figure()
 	
+	# Methods that must be overridden ----------------------------------
+	
 	def show(self):
 		# Overriding this method as specified in the class Figure.
 		self.plotly_figure.show()
@@ -72,16 +74,18 @@ class PlotlyFigure(Figure):
 	def draw_trace(self, trace):
 		# Overriding this method as specified in the class Figure.
 		traces_drawing_methods = {
-			Scatter: self.draw_scatter,
-			Histogram: self.draw_histogram,
-			Heatmap: self.draw_heatmap,
-			# ~ 'contour': self.draw_contour,
+			Scatter: self._draw_scatter,
+			Histogram: self._draw_histogram,
+			Heatmap: self._draw_heatmap,
+			# ~ 'contour': self._draw_contour,
 		}
 		if type(trace) not in traces_drawing_methods:
 			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
 		traces_drawing_methods[type(trace)](trace)
 	
-	def draw_scatter(self, scatter: Scatter):
+	# Methods that draw each of the traces (for internal use only) -----
+	
+	def _draw_scatter(self, scatter: Scatter):
 		if not isinstance(scatter, Scatter):
 			raise TypeError(f'<scatter> must be an instance of Scatter, received object of type {type(scatter)}.')
 		self.plotly_figure.add_trace(
@@ -101,7 +105,7 @@ class PlotlyFigure(Figure):
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(scatter.color)
 		self.plotly_figure['data'][-1]['line']['width'] = scatter.linewidth
 	
-	def draw_histogram(self, histogram):
+	def _draw_histogram(self, histogram):
 		if not isinstance(histogram, Histogram):
 			raise TypeError(f'<histogram> must be an instance of Histogram, received object of type {type(histogram)}.')
 		x = np.array(histogram.x) # Make a copy to avoid touching the original data.
@@ -179,7 +183,7 @@ class PlotlyFigure(Figure):
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure['data'][-1]['line']['width'] = histogram.linewidth
 	
-	def draw_heatmap(self, heatmap):
+	def _draw_heatmap(self, heatmap):
 		if not isinstance(heatmap, Heatmap):
 			raise TypeError(f'<heatmap> must be an instance of Heatmap, received object of type {type(heatmap)}.')
 		x = heatmap.x
@@ -207,7 +211,7 @@ class PlotlyFigure(Figure):
 		)
 		self.plotly_figure.update_layout(legend_orientation="h")
 	
-	# ~ def draw_contour(self, contour):
+	# ~ def _draw_contour(self, contour):
 		# ~ x = contour['data']['x']
 		# ~ y = contour['data']['y']
 		# ~ z = contour['data']['z']

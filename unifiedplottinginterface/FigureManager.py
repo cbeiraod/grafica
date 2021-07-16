@@ -1,15 +1,16 @@
 from .figure import Figure
 from .PlotlyFigure import PlotlyFigure
+from .MatplotlibFigure import MatplotlibFigure
 import __main__
 from pathlib import Path
 
 class FigureManager:
 	def __init__(self):
 		self.figures = [] # Figures of class "from .figure import Figure" are stored here.
-		self.plotters = {}
+		self.plotters = {} # Plotters to create figures are stored here.
 		BUILT_IN_PLOTTERS = {
 			'plotly': PlotlyFigure,
-			# ~ 'matplotlib': MatplotlibFigure,
+			'matplotlib': MatplotlibFigure,
 		}
 		for name, plotter in BUILT_IN_PLOTTERS.items():
 			self.add_plotter(plotter = plotter, name = name)
@@ -31,8 +32,14 @@ class FigureManager:
 			raise TypeError(f'<name> must be a string, received {name} of type {type(name)}.')
 		self.plotters[name] = plotter
 	
-	def new(self, **kwargs):
-		fig = self.default_plotter()
+	def new(self, plotter_name=None, **kwargs):
+		if plotter_name is None:
+			plotter = self.default_plotter
+		elif plotter_name not in self.plotters:
+			raise ValueError(f'Unknown <plotter_name> "{plotter_name}".')
+		else:
+			plotter = self.plotters[plotter_name]
+		fig = plotter()
 		self.figures.append(fig)
 		fig.set(**kwargs)
 		return fig
