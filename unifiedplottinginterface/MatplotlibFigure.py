@@ -59,7 +59,7 @@ class MatplotlibFigure(Figure):
 	
 	def _draw_scatter(self, scatter):
 		if not isinstance(scatter, Scatter):
-			raise TypeError(f'<scatter> must be an instance of Scatter, received object of type {type(scatter)}.')
+			raise TypeError(f'<scatter> must be an instance of {Scatter}, received object of type {type(scatter)}.')
 		self.matplotlib_axes.plot(
 			scatter.x,
 			scatter.y,
@@ -75,7 +75,7 @@ class MatplotlibFigure(Figure):
 	
 	def _draw_histogram(self, histogram):
 		if not isinstance(histogram, Histogram):
-			raise TypeError(f'<histogram> must be an instance of Histogram, received object of type {type(histogram)}.')
+			raise TypeError(f'<histogram> must be an instance of {Histogram}, received object of type {type(histogram)}.')
 		x = np.array(histogram.x) # Make a copy to avoid touching the original data.
 		x[0] = x[1] - (x[3]-x[1]) # Matplotlib does not plot points in infinity.
 		x[-1] = x[-2] + (x[-2]-x[-4]) # Matplotlib does not plot points in infinity.
@@ -107,7 +107,7 @@ class MatplotlibFigure(Figure):
 	
 	def _draw_heatmap(self, heatmap):
 		if not isinstance(heatmap, Heatmap):
-			raise TypeError(f'<heatmap> must be an instance of Heatmap, received object of type {type(heatmap)}.')
+			raise TypeError(f'<heatmap> must be an instance of {Heatmap}, received object of type {type(heatmap)}.')
 		x = heatmap.x
 		y = heatmap.y
 		z = np.array(heatmap.z) # Make a copy so I don't touch the original.
