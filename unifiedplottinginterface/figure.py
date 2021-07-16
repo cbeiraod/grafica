@@ -1,5 +1,5 @@
 import numpy as np
-from .validation import validate_kwargs
+from .traces import Trace, Scatter, Histogram, Heatmap, Contour
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -13,6 +13,10 @@ class Figure:
 		self._show_title = True
 		self.traces = []
 	
+	def show(self):
+		"""Must override this method when inheriting."""
+		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
 	# Figure properties ------------------------------------------------
 	# 	Figure properties are those things that belong to the figure
 	# 	itself and not to particular traces. Examples: title, x scale, etc.
@@ -23,6 +27,7 @@ class Figure:
 	@title.setter
 	def title(self, title):
 		self._title = str(title)
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def show_title(self):
@@ -32,6 +37,7 @@ class Figure:
 		if show not in [True, False]:
 			raise TypeError(f'<show_title> expects either True or False, received {show}.')
 		self._show_title = show
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def subtitle(self):
@@ -39,6 +45,7 @@ class Figure:
 	@subtitle.setter
 	def subtitle(self, subtitle):
 		self._subtitle = str(subtitle)
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def xlabel(self):
@@ -46,6 +53,7 @@ class Figure:
 	@xlabel.setter
 	def xlabel(self, xlabel):
 		self._xlabel = str(xlabel)
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def ylabel(self):
@@ -53,6 +61,7 @@ class Figure:
 	@ylabel.setter
 	def ylabel(self, ylabel):
 		self._ylabel = str(ylabel)
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def xscale(self):
@@ -62,6 +71,7 @@ class Figure:
 		if xscale not in _VALID_AXIS_SCALES:
 			raise ValueError(f'<xscale> must be one of {_VALID_AXIS_SCALES}, received {xscale}.')
 		self._xscale = xscale
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def yscale(self):
@@ -71,6 +81,7 @@ class Figure:
 		if yscale not in _VALID_AXIS_SCALES:
 			raise ValueError(f'<yscale> must be one of {_VALID_AXIS_SCALES}, received {yscale}.')
 		self._yscale = yscale
+		self.draw_layout() # Update the "drawn figure".
 	
 	@property
 	def aspect(self):
@@ -81,160 +92,93 @@ class Figure:
 		if aspect not in VALID_ASPECTS:
 			raise ValueError(f'<aspect> must be one of {VALID_ASPECTS}, received {aspect}.')
 		self._aspect = aspect
+		self.draw_layout() # Update the "drawn figure".
 	
 	def set(self, **kwargs):
 		for key in kwargs.keys():
 			if not hasattr(self, key):
 				raise ValueError(f'Cannot set <{key}>, invalid property.')
 			setattr(self, f'{key}', kwargs[key])
+	
+	# Drawing methods --------------------------------------------------
+	# The interface of these methods is defined here, but each specific
+	# plotter must override them implementing the details on how to draw
+	# each thing. Here (in the Figure class) we are at a too high level
+	# to know how to implement each of these things, but they will for
+	# sure be needed.
+	# Do not change the signature of these "drawing methods"!
+	
+	def show(self, **kwargs):
+		"""Must override this method when inheriting.
+		This method must display the figure in its current state."""
+		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
+	def save(self, file_name=None, **kwargs):
+		"""Must override this method when inheriting.
+		This method must save the figure in its current state to a persistent
+		file in the hard drive."""
+		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
+	def draw_layout(self):
+		"""Must override this method when inheriting.
+		This method must draw all the "figure properties", e.g. the title,
+		the axes labels, etc."""
+		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
+	def draw_trace(self, trace: Trace):
+		"""Must override this method when inheriting.
+		This method must draw the trace object received."""
+		raise NotImplementedError(f'Not implemented yet for the plotting package you are using! (Specifically for the class {self.__class__.__name__}.)')
+	
 	# ------------------------------------------------------------------
 	
+	def add_trace(self, trace: Trace):
+		"""Adds a trace to the figure. The user should not interact very
+		much with this method, the idea is to create one method for each
+		type of trace to ease the life of the user, e.g. self.scatter
+		receives the required information to create a Scatter trace and 
+		automatically calls self.add_trace(statter) later on. So the user
+		interacts with self.scatter. Of course he can call 
+			self.add_trace(Scatter(bla bla bla))
+		instead of
+			self.scatter(bla bla bla)
+		but it is more cumbersome which goes against the philosophy of
+		this package."""
+		if not isinstance(trace, Trace):
+			raise TypeError(f'<trace> must be an instance of Trace, received an object of type {type(trace)}')
+		self.traces.append(trace)
+		self.draw_trace(trace)
+	
+	# Methods to ease the life of the user -----------------------------
+	
 	def scatter(self, x, y, **kwargs):
-		"""Given two iterables <x> and <y> produces a scatter plot.
-		kwargs: Any of {'label','color','marker','linestyle','linewidth',
-		'alpha'} is supported. Additional arguments rise a ValueError.
-		"""
+		"""A Scatter trace is a line in an xy plane given by two arrays 
+		of points x=[x1,x2,...] and y=[y1,y2,...].
+		For optional kwargs see documentation of traces.Scatter."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
-		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
-		if not hasattr(x, '__iter__') or not hasattr(y, '__iter__'):
-			raise ValueError(f'<x> and <y> must be iterables, at least one of them is not.')
-		if len(x) != len(y):
-			raise ValueError(f'<x> and <y> must be of the same length but len(x)={len(x)} and len(y)={len(y)}.')
-		trace = {'type': 'scatter', 'data': {'x':x,'y':y}}
-		for arg in kwargs:
-			trace[arg] = kwargs[arg]
-		self.traces.append(trace)
+		self.add_trace(Scatter(x, y, **kwargs))
 	
-	def histogram(self, samples, density=False, bins='auto', **kwargs):
-		"""Given a collection of sample data <x> produces a histogram
-		plot.
-		samples: Array like containing the data.
-		density: Same behavior as density argument of numpy.histogram function.
-		bins: Same behavior as the bins argument of numpy.histogram function.
-		kwargs: Any of {'label','color','marker','linestyle','linewidth',
-		'alpha'} is supported."""
+	def histogram(self, samples, **kwargs):
+		"""Given an array of samples produces a histogram.
+		For optional kwargs see documentation of traces.Histogram."""
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
-		kwargs = validate_kwargs({'label','color','marker','linestyle','linewidth','alpha'}, kwargs)
-		if not hasattr(samples, '__iter__'):
-			raise ValueError(f'<samples> must be iterable.')
-		samples = np.array(samples)
-		hist, bin_edges = np.histogram(
-			samples[~np.isnan(samples)], 
-			bins = bins,
-			density = density,
-		)
-		x = [-float('inf')]
-		y = [sum(samples<bin_edges[0])]
-		for idx,count in enumerate(hist):
-			x.append(bin_edges[idx])
-			x.append(bin_edges[idx])
-			y.append(y[-1])
-			y.append(count)
-		x.append(bin_edges[-1])
-		y.append(y[-1])
-		x.append(bin_edges[-1])
-		y.append(sum(samples>bin_edges[-1]))
-		x.append(float('inf'))
-		y.append(y[-1])
-		trace = {'type': 'histogram', 'data': {'x':np.array(x),'y':np.array(y), 'bin_edges': np.array(bin_edges), 'bin_count': np.array([y[0]] + list(hist) + [y[-1]])}}
-		for arg in kwargs:
-			trace[arg] = kwargs[arg]
-		self.traces.append(trace)
+		self.add_trace(Histogram(samples, **kwargs))
 	
-	def heatmap(self, x, y, z, zscale='lin', zlabel=None, zlim=None, **kwargs):
+	def heatmap(self, x, y, z, **kwargs):
 		"""Produces a 2D colored heatmap in Cartesian coordinates. z is 
 		the color dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a color. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter.
-		- zlabel: A string with the label for the z dimension.
-		- zscale: Either 'lin' or 'log' for linear or logarithmic.
-		- zlim: (zmin, zmax) 
-		- kwargs:
-			- alpha: A float specifying the transparency."""
-		# Validation of arguments ---
-		kwargs = validate_kwargs({'alpha'}, kwargs)
-		if zscale not in _VALID_AXIS_SCALES:
-			raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
-		if zlabel is not None and not isinstance(zlabel, str):
-			raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
-		if zlim is not None:
-			try:
-				zlim = tuple(zlim)
-				if len(zlim) != 2:
-					raise ValueError() # Don't care, then I catch all and rise a unique error.
-				zlim = tuple([float(_) for _ in zlim])
-			except:
-				raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
-		_x = np.array(x)
-		_y = np.array(y)
-		_z = np.array(z)
-		if any([xy.ndim != 1 for xy in [_x,_y]]):
-			raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
-		if _z.ndim != 2:
-			raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
-		if _z.shape != (len(y),len(x)):
-			raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
-		# Arguments are validated ---
-		heatmap_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim}
-		trace = {'type': 'heatmap', 'data': {'x':_x,'y':_y, 'z': _z}}
-		for k,v in {**kwargs, **heatmap_specific_arguments}.items():
-			trace[k] = v
-		self.traces.append(trace)
+		For information on x, y, z and kwargs see documentation of 
+		traces.Heatmap."""
+		self.add_trace(Heatmap(x,y,z,**kwargs))
 	
-	def contour(self, x, y, z, zscale='lin', zlabel=None, zlim=None, contours=None, **kwargs):
+	def contour(self, x, y, z, **kwargs):
 		"""Produces a 2D contour plot in Cartesian coordinates. z is 
 		the "height" dimension.
-		- x, y: One dimensional arrays with the xy values respectively.
-		- z: Two dimensional array containing the magnitude that will be 
-		translated into a height. The shape of z must be (len(y),len(x)).
-		What happens with NaN or missing values is a problem of the specific
-		plotter.
-		- zlabel: A string with the label for the z dimension.
-		- zscale: Either 'lin' or 'log' for linear or logarithmic.
-		- zlim: (zmin, zmax).
-		- contours: Integer number stating number of contours to plot.
-		with the specific contours to use.
-		- kwargs:
-			- alpha: A float specifying the transparency."""
-		# Validation of arguments ---
-		kwargs = validate_kwargs({'alpha'}, kwargs)
-		if zscale not in _VALID_AXIS_SCALES:
-			raise ValueError(f'<zscale> must be one of {_VALID_AXIS_SCALES}, received {zscale}.')
-		if zlabel is not None and not isinstance(zlabel, str):
-			raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
-		if zlim is not None:
-			try:
-				zlim = tuple(zlim)
-				if len(zlim) != 2:
-					raise ValueError() # Don't care, then I catch all and rise a unique error.
-				zlim = tuple([float(_) for _ in zlim])
-			except:
-				raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
-		_x = np.array(x)
-		_y = np.array(y)
-		_z = np.array(z)
-		if any([xy.ndim != 1 for xy in [_x,_y]]):
-			raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
-		if _z.ndim != 2:
-			raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
-		if _z.shape != (len(y),len(x)):
-			raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(y),len(x))}.')
-		if contours is not None:
-			try:
-				contours = int(contours)
-			except:
-				raise TypeError(f'<contours> must be an integer number, received an object of type {type(contours)}.')
-		# Arguments are validated ---
-		contour_specific_arguments = {'zscale': zscale, 'zlabel': zlabel, 'zlim': zlim, 'contours': contours}
-		trace = {'type': 'contour', 'data': {'x':_x,'y':_y, 'z': _z}}
-		for k,v in {**kwargs, **contour_specific_arguments}.items():
-			trace[k] = v
-		self.traces.append(trace)
+		For information on x, y, z and kwargs see documentation of 
+		traces.Contour."""
+		self.add_trace(Contour(x,y,z,**kwargs))
 	# ------------------------------------------------------------------
 	
 	DEFAULT_COLORS = [
