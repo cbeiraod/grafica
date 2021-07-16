@@ -1,6 +1,8 @@
 from .validation import validate_alpha, validate_color, validate_label, validate_linestyle, validate_linewidth, validate_marker
 import numpy as np
 
+VALID_ZSCALES = {'lin','log'}
+
 class Trace:
 	"""Most basic trace definition. Other traces should inherit from this
 	parent class. This class (and sub classes) are intended to be just
@@ -135,7 +137,6 @@ class Heatmap(Trace):
 	def __init__(self, x, y, z, zscale='lin', zlabel=None, zlim=None, alpha=1, label=None):
 		super().__init__(label)
 		self._alpha = validate_alpha(alpha)
-		VALID_ZSCALES = {'lin','log'}
 		if zscale not in VALID_ZSCALES:
 			raise ValueError(f'<zscale> must be one of {VALID_ZSCALES}, received {zscale}.')
 		self._zscale = zscale
@@ -195,3 +196,82 @@ class Heatmap(Trace):
 	@property
 	def label(self):
 		return self._label
+
+class Contour(Trace):
+	def __init__(self, x, y, z, zscale='lin', zlabel=None, zlim=None, alpha=1, contours=None, label=None):
+		super().__init__(label)
+		self._alpha = validate_alpha(alpha)
+		if zscale not in VALID_ZSCALES:
+			raise ValueError(f'<zscale> must be one of {VALID_ZSCALES}, received {zscale}.')
+		self._zscale = zscale
+		if zlabel is not None and not isinstance(zlabel, str):
+			raise TypeError(f'<zlabel> must be a string, received an object of type {type(zlabel)}.')
+		self._zlabel = zlabel
+		if zlim is not None:
+			try:
+				zlim = tuple(zlim)
+				if len(zlim) != 2:
+					raise ValueError() # Don't care, then I catch all and rise a unique error.
+				zlim = tuple([float(_) for _ in zlim])
+			except:
+				raise ValueError(f'<zlim> must be a tuple of the form (zmin, zmax) with zmin and zmax float numbers.')
+		self._zlim = zlim
+		_x = np.array(x)
+		_y = np.array(y)
+		_z = np.array(z)
+		if any([xy.ndim != 1 for xy in [_x,_y]]):
+			raise ValueError(f'<x>, <y> must be one dimensional arrays, received x.ndim={_x.ndim}, y.ndim={_y.ndim}.')
+		if _z.ndim != 2:
+			raise ValueError(f'<z> must be a two dimensional array, received z.ndim={_z.ndim}')
+		if _z.shape != (len(_y),len(_x)):
+			raise ValueError(f'The shape of <z> must be (len(y),len(x)). Received z.shape={_z.shape}, (len(y),len(x))={(len(_y),len(_x))}.')
+		self._x = _x
+		self._y = _y
+		self._z = _z
+		if contours is None:
+			contours = 5
+		if not isinstance(contours, int):
+			if not hasattr(contours, '__iter__'):
+				raise ValueError(f'<contours> must be an integer number denoting the number of contours to use or an iterable of float numbers specifying the contours.')
+			for f in contours:
+				try:
+					float(f)
+				except:
+					raise ValueError(f'<contours> must be an iterable of float numbers, but the element {f} was found within <contours> which cannot be interpreted as a float number.')
+		self._contours = contours
+
+	@property
+	def x(self):
+		return self._x
+	
+	@property
+	def y(self):
+		return self._y
+	
+	@property
+	def z(self):
+		return self._z
+	
+	@property
+	def zscale(self):
+		return self._zscale
+	
+	@property
+	def zlabel(self):
+		return self._zlabel
+	
+	@property
+	def zlim(self):
+		return self._zlim
+	
+	@property
+	def alpha(self):
+		return self._alpha
+	
+	@property
+	def label(self):
+		return self._label
+	
+	@property
+	def contours(self):
+		return self._contours

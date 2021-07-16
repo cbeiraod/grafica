@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, Histogram, Heatmap
+from .traces import Scatter, Histogram, Heatmap, Contour
 import matplotlib.pyplot as plt
 import matplotlib.colors as matplotlib_colors
 import numpy as np
@@ -49,7 +49,7 @@ class MatplotlibFigure(Figure):
 			Scatter: self._draw_scatter,
 			Histogram: self._draw_histogram,
 			Heatmap: self._draw_heatmap,
-			# ~ 'contour': self.draw_contour,
+			Contour: self._draw_contour,
 		}
 		if type(trace) not in traces_drawing_methods:
 			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
@@ -126,39 +126,51 @@ class MatplotlibFigure(Figure):
 			z, 
 			rasterized = True, # To avoid heavy PDF files. After all, the heatmap plot is a pixel map...
 			shading = 'auto', 
-			cmap = 'Blues_r',
+			cmap = 'plasma',
 			norm = norm, 
 		)
 		cbar = self.matplotlib_figure.colorbar(cs)
 		if heatmap.zlabel is not None:
 			cbar.set_label(heatmap.zlabel, rotation = 90)
 	
-	# ~ def draw_contour(self, contour):
-		# ~ x = contour['data']['x']
-		# ~ y = contour['data']['y']
-		# ~ z = np.array(contour['data']['z']) # Make a copy so I don't touch the original.
-		# ~ vmin = contour.get('zlim')[0] if contour.get('zlim') is not None else np.nanmin(z)
-		# ~ vmax = contour.get('zlim')[1] if contour.get('zlim') is not None else np.nanmax(z)
-		# ~ if contour.get('zscale') in [None, 'lin']: # Linear scale
-			# ~ norm = matplotlib_colors.Normalize(vmin=vmin, vmax=vmax)
-		# ~ elif contour.get('zscale') == 'log':
-			# ~ if (z<=0).any():
-				# ~ warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
-				# ~ z[z<=0] = float('Nan')
-			# ~ norm = matplotlib_colors.LogNorm(vmin=max(vmin,np.nanmin(z)), vmax=vmax)
-		# ~ cs = self.matplotlib_axes.contour(
-			# ~ x, 
-			# ~ y, 
-			# ~ z, 
-			# ~ rasterized = True, # To avoid heavy PDF files. After all, the contour plot is a pixel map...
-			# ~ shading = 'auto', 
-			# ~ cmap = 'Blues_r',
-			# ~ norm = norm, 
-		# ~ )
-		# ~ cbar = self.matplotlib_figure.colorbar(cs)
-		# ~ if contour.get('zlabel') is not None:
-			# ~ cbar.set_label(contour.get('zlabel'), rotation = 90)
-		
+	def _draw_contour(self, contour):
+		if not isinstance(contour, Contour):
+			raise TypeError(f'<contour> must be an instance of {Contour}, received object of type {type(contour)}.')
+		x = contour.x
+		y = contour.y
+		z = np.array(contour.z) # Make a copy so I don't touch the original.
+		vmin = contour.zlim[0] if contour.zlim is not None else np.nanmin(z)
+		vmax = contour.zlim[1] if contour.zlim is not None else np.nanmax(z)
+		if contour.zscale in [None, 'lin']: # Linear scale
+			norm = matplotlib_colors.Normalize(vmin=vmin, vmax=vmax)
+		elif contour.zscale == 'log':
+			if (z<=0).any():
+				warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+				z[z<=0] = float('Nan')
+			norm = matplotlib_colors.LogNorm(vmin=max(vmin,np.nanmin(z)), vmax=vmax)
+		cs = self.matplotlib_axes.pcolormesh(
+			x, 
+			y, 
+			z, 
+			rasterized = True, # To avoid heavy PDF files. After all, the heatmap plot is a pixel map...
+			shading = 'auto', 
+			cmap = 'plasma',
+			norm = norm,
+			alpha = contour.alpha,
+		)
+		cbar = self.matplotlib_figure.colorbar(cs)
+		if contour.zlabel is not None:
+			cbar.set_label(contour.zlabel, rotation = 90)
+		cs = self.matplotlib_axes.contour(
+			x, 
+			y, 
+			z, 
+			colors = 'k',
+			norm = norm,
+			alpha = contour.alpha,
+			levels = contour.contours,
+		)
+		self.matplotlib_axes.clabel(cs, inline=True)
 	
 def map_axes_scale_to_Matplotlib_scale(scale):
 	if scale is None or scale == 'lin':

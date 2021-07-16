@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, Histogram, Heatmap
+from .traces import Scatter, Histogram, Heatmap, Contour
 import plotly.graph_objects as go
 import plotly
 import numpy as np
@@ -77,7 +77,7 @@ class PlotlyFigure(Figure):
 			Scatter: self._draw_scatter,
 			Histogram: self._draw_histogram,
 			Heatmap: self._draw_heatmap,
-			# ~ 'contour': self._draw_contour,
+			Contour: self._draw_contour,
 		}
 		if type(trace) not in traces_drawing_methods:
 			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
@@ -211,38 +211,48 @@ class PlotlyFigure(Figure):
 		)
 		self.plotly_figure.update_layout(legend_orientation="h")
 	
-	# ~ def _draw_contour(self, contour):
-		# ~ x = contour['data']['x']
-		# ~ y = contour['data']['y']
-		# ~ z = contour['data']['z']
-		# ~ if contour.get('zscale') == 'log' and (z<=0).any():
-			# ~ warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
-			# ~ with warnings.catch_warnings():
-				# ~ warnings.filterwarnings("ignore", message="invalid value encountered in log")
-				# ~ z = np.log(z)
-		# ~ self.plotly_figure.add_trace(
-			# ~ go.Contour(
-				# ~ x = x,
-				# ~ y = y,
-				# ~ z = z,
-				# ~ opacity = contour.get('alpha'),
-				# ~ zmin = contour.get('zlim')[0] if contour.get('zlim') is not None else None,
-				# ~ zmax = contour.get('zlim')[1] if contour.get('zlim') is not None else None,
-				# ~ colorbar = dict(
-					# ~ title = ('log ' if contour.get('zscale') == 'log' else '') + (contour.get('zlabel') if contour.get('zlabel') is not None else ''),
-					# ~ titleside = 'right',
-				# ~ ),
-				# ~ hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(contour["zlabel"] if contour.get("zlabel") is not None else "color scale")}: %{{z}}<extra></extra>',
-				# ~ contours=dict(
-					# ~ coloring = 'heatmap',
-					# ~ showlabels = True, # show labels on contours
-					# ~ labelfont = dict( # label font properties
-						# ~ color = 'black',
-					# ~ )
-				# ~ )
-			# ~ )
-		# ~ )
-		# ~ self.plotly_figure.update_layout(legend_orientation="h")
+	def _draw_contour(self, contour):
+		if not isinstance(contour, Contour):
+			raise TypeError(f'<contour> must be an instance of {Contour}, received object of type {type(contour)}.')
+		x = contour.x
+		y = contour.y
+		z = contour.z
+		if contour.zscale == 'log' and (z<=0).any():
+			warnings.warn('Warning: log color scale was selected and there are <z> values <= 0. In the plot you will see them as NaN.')
+			with warnings.catch_warnings():
+				warnings.filterwarnings("ignore", message="invalid value encountered in log")
+				z = np.log(z)
+		lowest_contour = contour.zlim[0] if contour.zlim is not None else contour.z.min()
+		highest_contour = contour.zlim[1] if contour.zlim is not None else contour.z.max()
+		if hasattr(contour.contours, '__iter__'):
+			raise NotImplementedError(f'An iterable specifying which contours to use was not yet implemented. Only implemented an integer number specifying number of equidistant contours.')
+		n_contours = contour.contours
+		self.plotly_figure.add_trace(
+			go.Contour(
+				x = x,
+				y = y,
+				z = z,
+				opacity = contour.alpha,
+				zmin = contour.zlim[0] if contour.zlim is not None else None,
+				zmax = contour.zlim[1] if contour.zlim is not None else None,
+				colorbar = dict(
+					title = ('log ' if contour.zscale == 'log' else '') + (contour.zlabel if contour.zlabel is not None else ''),
+					titleside = 'right',
+				),
+				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(contour.zlabel if contour.zlabel is not None else "color scale")}: %{{z}}<extra></extra>',
+				contours = dict(
+					coloring = 'heatmap',
+					showlabels = True, # show labels on contours
+					labelfont = dict( # label font properties
+						color = 'black',
+					),
+					start = lowest_contour,
+					end = highest_contour,
+					size = (highest_contour-lowest_contour)/(n_contours),
+				)
+			)
+		)
+		self.plotly_figure.update_layout(legend_orientation="h")
 		
 def translate_marker_and_linestyle_to_Plotly_mode(marker, linestyle):
 	"""<marker> and <linestyle> are each one and only one of the valid
