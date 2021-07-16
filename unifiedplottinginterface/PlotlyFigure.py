@@ -1,24 +1,23 @@
 from .figure import Figure
-from .plotter import Plotter
 from .traces import Scatter, Histogram, Heatmap
 import plotly.graph_objects as go
 import plotly
 import numpy as np
 import warnings
 
-class PlotlyPlotter(Plotter):
-	def __init__(self, figure):
-		super().__init__(figure)
+class PlotlyFigure(Figure):
+	def __init__(self):
+		super().__init__()
 		self.plotly_figure = go.Figure()
-		self.draw_figure()
-		self.draw_traces()
 	
 	def show(self):
+		# Overriding this method as specified in the class Figure.
 		self.plotly_figure.show()
 	
 	def save(self, file_name=None, include_plotlyjs='cdn', auto_open=False, **kwargs):
+		# Overriding this method as specified in the class Figure.
 		if file_name is None:
-			file_name = self.parent_figure.title
+			file_name = self.title
 		if file_name is None: # If it is still None...
 			raise ValueError(f'Please provide a name for saving the figure to a file by the <file_name> argument.')
 		if file_name[-5:] != '.html':
@@ -31,32 +30,33 @@ class PlotlyPlotter(Plotter):
 			**kwargs
 		)
 	
-	def draw_figure(self):
-		if self.parent_figure.show_title == True and self.parent_figure.title != None:
-			self.plotly_figure.update_layout(title = self.parent_figure.title)
+	def draw_layout(self):
+		# Overriding this method as specified in the class Figure.
+		if self.show_title == True and self.title != None:
+			self.plotly_figure.update_layout(title = self.title)
 		self.plotly_figure.update_layout(
-			xaxis_title = self.parent_figure.xlabel,
-			yaxis_title = self.parent_figure.ylabel,
+			xaxis_title = self.xlabel,
+			yaxis_title = self.ylabel,
 		)
 		# Axes scale:
-		if self.parent_figure.xscale in [None, 'lin']:
+		if self.xscale in [None, 'lin']:
 			pass
-		elif self.parent_figure.xscale == 'log':
+		elif self.xscale == 'log':
 			self.plotly_figure.update_layout(xaxis_type = 'log')
-		if self.parent_figure.yscale in [None, 'lin']:
+		if self.yscale in [None, 'lin']:
 			pass
-		elif self.parent_figure.yscale == 'log':
+		elif self.yscale == 'log':
 			self.plotly_figure.update_layout(yaxis_type = 'log')
 		
-		if self.parent_figure.aspect == 'equal':
+		if self.aspect == 'equal':
 			self.plotly_figure.update_yaxes(
 				scaleanchor = "x",
 				scaleratio = 1,
 			)
 		
-		if self.parent_figure.subtitle != None:
+		if self.subtitle != None:
 			self.plotly_figure.add_annotation(
-				text = self.parent_figure.subtitle.replace('\n','<br>'),
+				text = self.subtitle.replace('\n','<br>'),
 				xref = "paper", 
 				yref = "paper",
 				x = .5, 
@@ -69,17 +69,17 @@ class PlotlyPlotter(Plotter):
 				),
 			)
 	
-	def draw_traces(self):
+	def draw_trace(self, trace):
+		# Overriding this method as specified in the class Figure.
 		traces_drawing_methods = {
 			Scatter: self.draw_scatter,
 			Histogram: self.draw_histogram,
 			Heatmap: self.draw_heatmap,
 			# ~ 'contour': self.draw_contour,
 		}
-		for trace in self.parent_figure.traces:
-			if type(trace) not in traces_drawing_methods:
-				raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
-			traces_drawing_methods[type(trace)](trace)
+		if type(trace) not in traces_drawing_methods:
+			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
+		traces_drawing_methods[type(trace)](trace)
 	
 	def draw_scatter(self, scatter: Scatter):
 		if not isinstance(scatter, Scatter):
@@ -202,7 +202,7 @@ class PlotlyPlotter(Plotter):
 					title = ('log ' if heatmap.zscale == 'log' else '') + (heatmap.zlabel if heatmap.zlabel is not None else ''),
 					titleside = 'right',
 				),
-				hovertemplate = f'{(self.parent_figure.xlabel if self.parent_figure.xlabel is not None else "x")}: %{{x}}<br>{(self.parent_figure.ylabel if self.parent_figure.ylabel is not None else "y")}: %{{y}}<br>{(heatmap.zlabel if heatmap.zlabel is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
+				hovertemplate = f'{(self.xlabel if self.xlabel is not None else "x")}: %{{x}}<br>{(self.ylabel if self.ylabel is not None else "y")}: %{{y}}<br>{(heatmap.zlabel if heatmap.zlabel is not None else "color scale")}: %{{z}}<extra></extra>', # https://community.plotly.com/t/heatmap-changing-x-y-and-z-label-on-tooltip/23588/6
 			)
 		)
 		self.plotly_figure.update_layout(legend_orientation="h")
