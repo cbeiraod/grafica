@@ -1,10 +1,10 @@
-import unifiedplottinginterface as upi
+import grafica
 import numpy as np
 
 x = np.linspace(1,2,9)
 
-for plotter in upi.manager.plotters:
-	fig = upi.manager.new(
+for plotter in grafica.manager.plotters:
+	fig = grafica.manager.new(
 		title = 'Markers and linestyles',
 		yscale = 'log',
 		plotter_name = plotter,
@@ -19,7 +19,7 @@ for plotter in upi.manager.plotters:
 				linestyle = linestyle,
 			)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Colors',
 		plotter_name = plotter,
 	)
@@ -32,7 +32,7 @@ for plotter in upi.manager.plotters:
 			marker = '.',
 		)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Alpha',
 		aspect = 'equal',
 		plotter_name = plotter,
@@ -45,7 +45,7 @@ for plotter in upi.manager.plotters:
 		marker = '.',
 	)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Linewidth',
 		plotter_name = plotter,
 	)
@@ -66,4 +66,4 @@ for plotter in upi.manager.plotters:
 				color = (0,0,1),
 			)
 
-upi.manager.save(mkdir=True)
+grafica.manager.save(mkdir=True)

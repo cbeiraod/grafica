@@ -1,4 +1,4 @@
-import unifiedplottinginterface as upi
+import grafica
 import numpy as np
 
 x = np.linspace(0,np.pi,99)
@@ -7,8 +7,8 @@ y = np.linspace(0,2*np.pi,77)
 xx, yy = np.meshgrid(x,y)
 zz = np.sin(xx)
 
-for plotter in upi.manager.plotters:
-	fig = upi.manager.new(
+for plotter in grafica.manager.plotters:
+	fig = grafica.manager.new(
 		title = 'Basic heatmap plot',
 		xlabel = 'x',
 		ylabel = 'y',
@@ -20,7 +20,7 @@ for plotter in upi.manager.plotters:
 		z = zz,
 	)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Heatmap plot with annotations and alpha',
 		xlabel = 'x',
 		ylabel = 'y',
@@ -34,7 +34,7 @@ for plotter in upi.manager.plotters:
 		alpha = .5,
 	)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Heatmap plot with logarithmic scale',
 		xlabel = 'x',
 		ylabel = 'y',
@@ -48,7 +48,7 @@ for plotter in upi.manager.plotters:
 		zscale = 'log',
 	)
 
-	fig = upi.manager.new(
+	fig = grafica.manager.new(
 		title = 'Heatmap plot with zlim',
 		xlabel = 'x',
 		ylabel = 'y',
@@ -60,4 +60,4 @@ for plotter in upi.manager.plotters:
 		z = zz,
 		zlim = (.5,1.5),
 	)
-upi.manager.save(mkdir=True)
+grafica.manager.save(mkdir=True)

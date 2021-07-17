@@ -1,4 +1,4 @@
-from unifiedplottinginterface.validation import *
+from grafica.validation import *
 import unittest
 
 class TestProperties(unittest.TestCase):

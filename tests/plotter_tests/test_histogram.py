@@ -1,10 +1,10 @@
-import unifiedplottinginterface as upi
+import grafica
 import numpy as np
 
 samples = np.random.randn(999)
 
-for plotter in upi.manager.plotters:
-	fig = upi.manager.new(
+for plotter in grafica.manager.plotters:
+	fig = grafica.manager.new(
 		title = 'Histogram',
 		subtitle = 'All the traces use the exact same data',
 		plotter_name = plotter,
