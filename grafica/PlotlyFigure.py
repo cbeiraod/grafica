@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, Histogram, Heatmap, Contour
+from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour
 import plotly.graph_objects as go
 import plotly
 import numpy as np
@@ -75,6 +75,7 @@ class PlotlyFigure(Figure):
 		# Overriding this method as specified in the class Figure.
 		traces_drawing_methods = {
 			Scatter: self._draw_scatter,
+			ErrorBand: self._draw_errorband,
 			Histogram: self._draw_histogram,
 			Heatmap: self._draw_heatmap,
 			Contour: self._draw_contour,
@@ -104,6 +105,49 @@ class PlotlyFigure(Figure):
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(scatter.color)
 		self.plotly_figure['data'][-1]['line']['width'] = scatter.linewidth
+	
+	def _draw_errorband(self, errorband: ErrorBand):
+		if not isinstance(errorband, ErrorBand):
+			raise TypeError(f'<errorband> must be an instance of {ErrorBand}, received object of type {type(errorband)}.')
+		x = errorband.x
+		y1 = errorband.y + errorband.higher
+		y2 = errorband.y - errorband.lower
+		legendgroup = str(np.random.rand(3))
+		# Draw the error band ---
+		self.plotly_figure.add_trace(
+			go.Scatter(
+				x = list(x) + list(x)[::-1],
+				y = list(y1) + list(y2)[::-1],
+				opacity = errorband.alpha/2,
+				mode = 'lines',
+				name = errorband.label,
+				legendgroup = legendgroup,
+				showlegend = False,
+				line = dict(
+					color = rgb2hexastr_color(errorband.color),
+				),
+			)
+		)
+		self.plotly_figure['data'][-1]['fill'] = 'toself'
+		self.plotly_figure['data'][-1]['hoveron'] = 'points'
+		self.plotly_figure['data'][-1]['line']['width'] = 0
+		# Draw the trace itself ---
+		self.plotly_figure.add_trace(
+			go.Scatter(
+				x = errorband.x,
+				y = errorband.y,
+				name = errorband.label,
+				opacity = errorband.alpha,
+				mode = translate_marker_and_linestyle_to_Plotly_mode(errorband.marker, errorband.linestyle),
+				marker_symbol = map_marker_to_Plotly_markers(errorband.marker),
+				showlegend = True if errorband.label is not None else False,
+				line = dict(
+					dash = map_linestyle_to_Plotly_linestyle(errorband.linestyle),
+					color = rgb2hexastr_color(errorband.color),
+				),
+				legendgroup = legendgroup,
+			)
+		)
 	
 	def _draw_histogram(self, histogram):
 		if not isinstance(histogram, Histogram):

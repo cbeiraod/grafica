@@ -66,6 +66,30 @@ class Scatter(Trace):
 	def y(self):
 		return self._y
 
+class ErrorBand(Scatter):
+	def __init__(self, x, y, lower, higher, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None):
+		"""A Scatter trace with a solid and continuous "error band" going
+		from <y-lower> up to <y+higher>.
+		- color: RGB tuple.
+		- marker: One of {'.','o','+','x','*', None}.
+		- linestyle: One of {'solid','dotted','dashed', 'none', None}.
+		- linewidth: Float number.
+		- alpha: Float number.
+		- label: String."""
+		super().__init__(x=x, y=y, color=color, marker=marker, linestyle=linestyle, linewidth=linewidth, alpha=alpha, label=label)
+		if not hasattr(lower, '__iter__') or not hasattr(higher, '__iter__') or not len(higher) == len(lower) == len(x):
+			raise ValueError(f'<lower> and <higher> must be two iterables of the same length than <x> and <y>.')
+		self._lower = lower
+		self._higher = higher
+	
+	@property
+	def lower(self):
+		return self._lower
+	
+	@property
+	def higher(self):
+		return self._higher
+
 class Histogram(Trace):
 	def __init__(self, samples, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None, density=False, bins='auto'):
 		"""Given an array of samples produces a histogram.
@@ -307,3 +331,4 @@ class Contour(Trace):
 	@property
 	def contours(self):
 		return self._contours
+

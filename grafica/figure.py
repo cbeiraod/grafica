@@ -1,5 +1,5 @@
 import numpy as np
-from .traces import Trace, Scatter, Histogram, Heatmap, Contour
+from .traces import Trace, Scatter, ErrorBand, Histogram, Heatmap, Contour
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -158,6 +158,14 @@ class Figure:
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
 		self.add_trace(Scatter(x, y, **kwargs))
+	
+	def errorband(self, x, y, lower, higher, **kwargs):
+		"""A Scatter trace with a solid and continuous "error band" going
+		from <y-lower> up to <y+higher>.
+		For optional kwargs see documentation of traces.ErrorBand."""
+		if kwargs.get('color') is None:
+			kwargs['color'] = self.pick_default_color()
+		self.add_trace(ErrorBand(x, y, lower, higher, **kwargs))
 	
 	def histogram(self, samples, **kwargs):
 		"""Given an array of samples produces a histogram.
