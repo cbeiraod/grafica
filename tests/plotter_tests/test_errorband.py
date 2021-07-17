@@ -3,7 +3,7 @@ import numpy as np
 
 x = np.linspace(1,2,9)
 
-for plotter in {'plotly'}:#grafica.manager.plotters:
+for plotter in grafica.manager.plotters:
 	fig = grafica.manager.new(
 		title = 'Markers and linestyles',
 		yscale = 'log',

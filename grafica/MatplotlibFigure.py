@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, Histogram, Heatmap, Contour
+from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour
 import matplotlib.pyplot as plt
 import matplotlib.colors as matplotlib_colors
 import numpy as np
@@ -50,6 +50,7 @@ class MatplotlibFigure(Figure):
 			Histogram: self._draw_histogram,
 			Heatmap: self._draw_heatmap,
 			Contour: self._draw_contour,
+			ErrorBand: self._draw_errorband,
 		}
 		if type(trace) not in traces_drawing_methods:
 			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
@@ -71,6 +72,30 @@ class MatplotlibFigure(Figure):
 			label = scatter.label,
 		)
 		if scatter.label != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
+			self.matplotlib_axes.legend()
+	
+	def _draw_errorband(self, errorband: ErrorBand):
+		if not isinstance(errorband, ErrorBand):
+			raise TypeError(f'<errorband> must be an instance of {ErrorBand}, received object of type {type(errorband)}.')
+		self.matplotlib_axes.fill_between(
+			errorband.x,
+			errorband.y - errorband.lower,
+			errorband.y + errorband.higher,
+			alpha = errorband.alpha/2,
+			color = errorband.color,
+			linewidth = 0,
+		)
+		self.matplotlib_axes.plot(
+			errorband.x,
+			errorband.y,
+			color = errorband.color,
+			marker = errorband.marker,
+			linestyle = map_linestyle_to_Matplotlib_linestyle(errorband.linestyle),
+			linewidth = errorband.linewidth,
+			alpha = errorband.alpha,
+			label = errorband.label,
+		)
+		if errorband.label != None: # If you gave me a label it is obvious (for me) that you want to display it, no?
 			self.matplotlib_axes.legend()
 	
 	def _draw_histogram(self, histogram):
