@@ -144,6 +144,7 @@ class PlotlyFigure(Figure):
 				line = dict(
 					dash = map_linestyle_to_Plotly_linestyle(errorband.linestyle),
 					color = rgb2hexastr_color(errorband.color),
+					width = errorband.linewidth,
 				),
 				legendgroup = legendgroup,
 			)
