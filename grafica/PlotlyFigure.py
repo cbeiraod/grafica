@@ -157,6 +157,7 @@ class PlotlyFigure(Figure):
 		x[0] = x[1] - (x[3]-x[1]) # Plotly does not plot points in infinity.
 		x[-1] = x[-2] + (x[-2]-x[-4]) # Plotly does not plot points in infinity.
 		legendgroup = str(np.random.rand(3))
+		# The following trace is the histogram lines ---
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = x, 
@@ -173,6 +174,7 @@ class PlotlyFigure(Figure):
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure['data'][-1]['line']['width'] = histogram.linewidth
+		# The following trace adds the markers in the middle of each bin ---
 		if histogram.marker is not None:
 			self.plotly_figure.add_traces(
 				go.Scatter(
@@ -191,6 +193,7 @@ class PlotlyFigure(Figure):
 				)
 			)
 			self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
+		# The following trace adds the hover texts ---
 		self.plotly_figure.add_traces(
 			go.Scatter(
 				x = [x[2*i] + (x[2*i+1]-x[2*i])/2 for i in range(int(len(x)/2))],
@@ -210,9 +213,10 @@ class PlotlyFigure(Figure):
 		)
 		self.plotly_figure['data'][-1]['marker']['color'] = rgb2hexastr_color(histogram.color)
 		self.plotly_figure['data'][-1]['line']['width'] = 0
+		# The following trace is to add the item in the legend ---
 		self.plotly_figure.add_traces(
 			go.Scatter(
-				x = [0],
+				x = [float('NaN')],
 				y = [float('NaN')],
 				name = histogram.label,
 				mode = translate_marker_and_linestyle_to_Plotly_mode(histogram.marker, histogram.linestyle),
