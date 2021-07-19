@@ -117,6 +117,7 @@ class Histogram(Trace):
 			bins = bins,
 			density = density,
 		)
+		hist[-1] -= sum(samples==bin_edges[-1])
 		x = [-float('inf')]
 		if density == False:
 			y = [sum(samples<bin_edges[0])]
@@ -133,8 +134,8 @@ class Histogram(Trace):
 		y.append(y[-1])
 		x.append(bin_edges[-1])
 		if density == False:
-			y.append(sum(samples>bin_edges[-1]))
-		elif sum(samples>bin_edges[-1]) == 0:
+			y.append(sum(samples>=bin_edges[-1]))
+		elif sum(samples>=bin_edges[-1]) == 0:
 			y.append(0)
 		else:
 			y.append(float('NaN'))

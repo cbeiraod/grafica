@@ -22,14 +22,14 @@ for plotter in grafica.manager.plotters:
 			label = f'bins = {bins}',
 			density = density,
 		)
-		# ~ bins = [-1,-.1,.1,1,2]
-		# ~ fig.histogram(
-			# ~ samples,
-			# ~ bins = bins,
-			# ~ label = f'bins = {bins}',
-			# ~ marker = '*',
-			# ~ density = density,
-		# ~ )
+		bins = [-1,-.1,.1,1,2]
+		fig.histogram(
+			samples,
+			bins = bins,
+			label = f'bins = {bins}',
+			marker = '*',
+			density = density,
+		)
 		bins = 6
 		fig.histogram(
 			samples,
@@ -38,5 +38,23 @@ for plotter in grafica.manager.plotters:
 			bins = bins,
 			density = density,
 		)
-	
+
+samples = [0,1,1,2,3,3,3]
+for plotter in grafica.manager.plotters:
+	fig = grafica.manager.new(
+		title = f'Checking boundaries in bins',
+		subtitle = f'Samples = {samples}',
+		plotter_name = plotter,
+	)
+	fig.histogram(
+		samples,
+		label = 'No args',
+	)
+	for bins in [[0,1,2,3], [1,2], [-1,0,1,2,3,4]]:
+		fig.histogram(
+			samples,
+			bins = bins,
+			label = f'bins = {bins}',
+		)
+
 grafica.manager.save(mkdir=True)

@@ -207,7 +207,7 @@ class PlotlyFigure(Figure):
 				),
 				legendgroup = legendgroup,
 				showlegend = False,
-				text = [f'Bin: [-∞, {histogram.bin_edges[0]}]<br>Count: {histogram.bin_counts[0]}'] + [f'Bin: [{histogram.bin_edges[i]}, {histogram.bin_edges[i+1]}]<br>Count: {histogram.bin_counts[i+1]}' for i in range(len(histogram.bin_edges)-1)] + [f'Bin: [{histogram.bin_edges[-1]},∞]<br>Count: {histogram.bin_counts[-1]}'],
+				text = [f'Bin: (-∞, {histogram.bin_edges[0]})<br>Count: {histogram.bin_counts[0]}'] + [f'Bin: [{histogram.bin_edges[i]}, {histogram.bin_edges[i+1]})<br>Count: {histogram.bin_counts[i+1]}' for i in range(len(histogram.bin_edges)-1)] + [f'Bin: [{histogram.bin_edges[-1]},∞)<br>Count: {histogram.bin_counts[-1]}'],
 				hovertemplate = "%{text}",
 			)
 		)
