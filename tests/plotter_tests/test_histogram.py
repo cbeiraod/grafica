@@ -41,20 +41,23 @@ for plotter in grafica.manager.plotters:
 
 samples = [0,1,1,2,3,3,3]
 for plotter in grafica.manager.plotters:
-	fig = grafica.manager.new(
-		title = f'Checking boundaries in bins',
-		subtitle = f'Samples = {samples}',
-		plotter_name = plotter,
-	)
-	fig.histogram(
-		samples,
-		label = 'No args',
-	)
-	for bins in [[0,1,2,3], [1,2], [-1,0,1,2,3,4]]:
+	for density in {True, False}:
+		fig = grafica.manager.new(
+			title = f'Checking boundaries in bins density {density}',
+			subtitle = f'Samples = {samples}',
+			plotter_name = plotter,
+		)
 		fig.histogram(
 			samples,
-			bins = bins,
-			label = f'bins = {bins}',
+			label = 'No args',
+			density = density,
 		)
+		for bins in [[0,1,2,3], [1,2], [-1,0,1,2,3,4]]:
+			fig.histogram(
+				samples,
+				bins = bins,
+				label = f'bins = {bins}',
+				density = density,
+			)
 
 grafica.manager.save(mkdir=True)

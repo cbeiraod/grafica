@@ -117,14 +117,20 @@ class Histogram(Trace):
 			bins = bins,
 			density = density,
 		)
-		hist[-1] -= sum(samples==bin_edges[-1])
+		if density == False:
+			hist[-1] -= sum(samples==bin_edges[-1])
+		else:
+			hist *= np.diff(bin_edges)*len(samples)
+			hist[-1] -= sum(samples==bin_edges[-1])
+			hist /= np.diff(bin_edges)*len(samples)
 		x = [-float('inf')]
 		if density == False:
 			y = [sum(samples<bin_edges[0])]
-		elif sum(samples<bin_edges[0]) == 0:
-			y = [0]
 		else:
-			y = [float('NaN')]
+			if sum(samples<bin_edges[0]) == 0:
+				y = [0]
+			else:
+				y = [float('NaN')]
 		for idx,count in enumerate(hist):
 			x.append(bin_edges[idx])
 			x.append(bin_edges[idx])
@@ -135,10 +141,11 @@ class Histogram(Trace):
 		x.append(bin_edges[-1])
 		if density == False:
 			y.append(sum(samples>=bin_edges[-1]))
-		elif sum(samples>=bin_edges[-1]) == 0:
-			y.append(0)
 		else:
-			y.append(float('NaN'))
+			if sum(samples>=bin_edges[-1]) == 0:
+				y.append(0)
+			else:
+				y.append(float('NaN'))
 		x.append(float('inf'))
 		y.append(y[-1])
 		self._x = np.array(x)
