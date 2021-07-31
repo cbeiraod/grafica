@@ -33,7 +33,7 @@ def validate_linestyle(linestyle):
 
 def validate_linewidth(linewidth):
 	if linewidth is None: # Use the defaultl value.
-		return 1
+		return 2
 	received_linewidth = linewidth
 	try:
 		linewidth = float(linewidth)

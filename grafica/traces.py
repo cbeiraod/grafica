@@ -18,7 +18,7 @@ class Trace:
 			return None
 
 class Scatter(Trace):
-	def __init__(self, x, y, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None):
+	def __init__(self, x, y, color, marker=None, linestyle='solid', linewidth=None, alpha=1, label=None):
 		"""A Scatter trace is a line in an xy plane given by two arrays 
 		of points x=[x1,x2,...] and y=[y1,y2,...].
 		- color: RGB tuple.
@@ -67,7 +67,7 @@ class Scatter(Trace):
 		return self._y
 
 class ErrorBand(Scatter):
-	def __init__(self, x, y, lower, higher, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None):
+	def __init__(self, x, y, lower, higher, color, marker=None, linestyle='solid', linewidth=None, alpha=1, label=None):
 		"""A Scatter trace with a solid and continuous "error band" going
 		from <y-lower> up to <y+higher>.
 		- color: RGB tuple.
@@ -91,7 +91,7 @@ class ErrorBand(Scatter):
 		return self._higher
 
 class Histogram(Trace):
-	def __init__(self, samples, color, marker=None, linestyle='solid', linewidth=1, alpha=1, label=None, density=False, bins='auto'):
+	def __init__(self, samples, color, marker=None, linestyle='solid', linewidth=None, alpha=1, label=None, density=False, bins='auto'):
 		"""Given an array of samples produces a histogram.
 		- color: RGB tuple.
 		- marker: One of {'.','o','+','x','*', None}.
