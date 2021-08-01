@@ -7,6 +7,7 @@ from pathlib import Path
 class FigureManager:
 	def __init__(self):
 		self.figures = [] # Figures of class "from .figure import Figure" are stored here.
+		self._unsaved_figures = [] # Figures that were not yet saved by the `save_unsaved` method.
 		self.plotters = {} # Plotters to create figures are stored here.
 		BUILT_IN_PLOTTERS = {
 			'plotly': PlotlyFigure,
@@ -41,6 +42,7 @@ class FigureManager:
 			plotter = self.plotters[plotter_name]
 		fig = plotter()
 		self.figures.append(fig)
+		self._unsaved_figures.append(fig)
 		fig.set(**kwargs)
 		return fig
 	
@@ -48,7 +50,7 @@ class FigureManager:
 		for fig in self.figures:
 			fig.show()
 	
-	def save(self, mkdir=False):
+	def save_unsaved(self, mkdir=False):
 		if mkdir == False: # Save the plots in the current working directory.
 			directory = './'
 		else:
@@ -57,6 +59,7 @@ class FigureManager:
 			else: # I assume mkdir is a path to a directory where to save the plots.
 				directory = str(mkdir)
 			Path(directory).mkdir(parents=True, exist_ok=True)
-		for idx,fig in enumerate(self.figures):
+		for idx,fig in enumerate(self._unsaved_figures):
 			file_name = fig.title if fig.title is not None else f'figure_{idx+1}'
 			fig.save(file_name = str(Path(directory)/Path(file_name)))
+		self._unsaved_figures = []
