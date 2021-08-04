@@ -1,5 +1,5 @@
 import numpy as np
-from .traces import Trace, Scatter, ErrorBand, Histogram, Heatmap, Contour
+from .traces import Trace, Scatter, ErrorBand, Histogram, KDE, Heatmap, Contour
 
 _VALID_AXIS_SCALES = {'lin','log'}
 
@@ -173,6 +173,13 @@ class Figure:
 		if kwargs.get('color') is None:
 			kwargs['color'] = self.pick_default_color()
 		self.add_trace(Histogram(samples, **kwargs))
+	
+	def KDE(self, samples, **kwargs):
+		"""Given an array of samples produces a KDE plot.
+		For optional kwargs see documentation of traces.KDE."""
+		if kwargs.get('color') is None:
+			kwargs['color'] = self.pick_default_color()
+		self.add_trace(KDE(samples, **kwargs))
 	
 	def heatmap(self, x, y, z, **kwargs):
 		"""Produces a 2D colored heatmap in Cartesian coordinates. z is 

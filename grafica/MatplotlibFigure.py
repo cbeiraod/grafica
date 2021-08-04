@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour
+from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour, KDE
 import matplotlib.pyplot as plt
 import matplotlib.colors as matplotlib_colors
 import numpy as np
@@ -51,9 +51,10 @@ class MatplotlibFigure(Figure):
 			Heatmap: self._draw_heatmap,
 			Contour: self._draw_contour,
 			ErrorBand: self._draw_errorband,
+			KDE: self._draw_scatter,
 		}
 		if type(trace) not in traces_drawing_methods:
-			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
+			raise RuntimeError(f"Don't know how to draw a {type(trace)} trace...")
 		traces_drawing_methods[type(trace)](trace)
 	
 	# Methods that draw each of the traces (for internal use only) -----

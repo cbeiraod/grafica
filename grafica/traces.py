@@ -1,5 +1,6 @@
 from .validation import validate_alpha, validate_color, validate_label, validate_linestyle, validate_linewidth, validate_marker
 import numpy as np
+from scipy.stats import gaussian_kde
 
 VALID_ZSCALES = {'lin','log'}
 
@@ -189,6 +190,42 @@ class Histogram(Trace):
 	@property
 	def bin_counts(self):
 		return self._bin_counts
+
+class KDE(Scatter):
+	def __init__(self, samples, color, x=None, linestyle='solid', linewidth=None, alpha=1, label=None, bw_method=None, weights=None):
+		"""Given an array of samples produces a Kernel Density Estimation (KDE) plot.
+		- samples: A 1D iterable containing the samples.
+		- color: RGB tuple.
+		- x: int or array of floats. If int, specifies the number of x
+		values equally spaced between min(samples) and max(samples) to
+		use for the plot. If iterable of floats, specifies the values of
+		x to use for the plot. If not specified, x=99 is used.
+		- linestyle: One of {'solid','dotted','dashed', 'none', None}.
+		- linewidth: Float number.
+		- alpha: Float number.
+		- label: String.
+		- bw_method: See scipy.stats.gaussian_kde.
+		- weights: See scipy.stats.gaussian_kde."""
+		if not hasattr(samples, '__iter__'):
+			raise ValueError(f'<samples> must be iterable.')
+		self._samples = samples
+		kde_function = gaussian_kde(samples, bw_method=bw_method, weights=weights)
+		if x is None:
+			x = np.linspace(min(samples), max(samples), 99)
+		elif isinstance(x, int):
+			x = np.linspace(min(samples), max(samples), x)
+		y = kde_function(x)
+		super().__init__(
+			x = x,
+			y = y,
+			color = color,
+			marker = None,
+			linestyle = linestyle,
+			linewidth = linewidth,
+			alpha = alpha,
+			label = label,
+		)
+		
 
 class Heatmap(Trace):
 	def __init__(self, x, y, z, zscale='lin', zlabel=None, zlim=None, alpha=1, label=None):

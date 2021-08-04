@@ -1,5 +1,5 @@
 from .figure import Figure
-from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour
+from .traces import Scatter, ErrorBand, Histogram, Heatmap, Contour, KDE
 import plotly.graph_objects as go
 import plotly
 import numpy as np
@@ -79,6 +79,7 @@ class PlotlyFigure(Figure):
 			Histogram: self._draw_histogram,
 			Heatmap: self._draw_heatmap,
 			Contour: self._draw_contour,
+			KDE: self._draw_scatter,
 		}
 		if type(trace) not in traces_drawing_methods:
 			raise RuntimeError(f"Don't know how to draw a <{type(trace)}> trace...")
