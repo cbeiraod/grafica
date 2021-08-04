@@ -208,8 +208,9 @@ class KDE(Scatter):
 		- weights: See scipy.stats.gaussian_kde."""
 		if not hasattr(samples, '__iter__'):
 			raise ValueError(f'<samples> must be iterable.')
-		self._samples = samples
-		kde_function = gaussian_kde(samples, bw_method=bw_method, weights=weights)
+		self._samples = np.array(samples)
+		self._samples = self._samples[~np.isnan(self._samples)]
+		kde_function = gaussian_kde(self._samples, bw_method=bw_method, weights=weights)
 		if x is None:
 			x = np.linspace(min(samples), max(samples), 99)
 		elif isinstance(x, int):
