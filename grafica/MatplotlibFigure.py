@@ -35,7 +35,7 @@ class MatplotlibFigure(Figure):
 		self.matplotlib_axes.set_xscale(map_axes_scale_to_Matplotlib_scale(self.xscale))
 		self.matplotlib_axes.set_yscale(map_axes_scale_to_Matplotlib_scale(self.yscale))
 		if self.title != None:
-			self.matplotlib_figure.canvas.set_window_title(self.title)
+			self.matplotlib_figure.canvas.manager.set_window_title(self.title)
 			if self.show_title == True:
 				self.matplotlib_figure.suptitle(self.title)
 		if self.aspect == 'equal':
