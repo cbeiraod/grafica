@@ -9,3 +9,6 @@ def new(*args, **kwargs):
 def save_unsaved(*args, **kwargs):
 	"""A shorthand wrapper around grafica.manager.save_unsaved"""
 	return manager.save_unsaved(*args, **kwargs)
+
+def show(*args, **kwargs):
+	return manager.show(*args, **kwargs)
