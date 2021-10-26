@@ -2,11 +2,15 @@ import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
 
+PLOTLY_SYMBOLS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'triangle-down', 'triangle-left', 'triangle-right', 'triangle-ne', 'triangle-se', 'triangle-sw', 'triangle-nw', 'pentagon', 'hexagon', 'hexagon2', 'octagon', 'star', 'hexagram', 'star-triangle-up', 'star-triangle-down', 'star-square', 'star-diamond', 'diamond-tall', 'diamond-wide', 'hourglass', 'bowtie', 'circle-cross', 'circle-x', 'square-cross', 'square-x', 'diamond-cross', 'diamond-x', 'cross-thin', 'x-thin', 'asterisk', 'hash', 'y-up', 'y-down', 'y-left', 'y-right', 'line-ew', 'line-ns', 'line-ne', 'line-nw', 'arrow-up', 'arrow-down', 'arrow-left', 'arrow-right', 'arrow-bar-up', 'arrow-bar-down', 'arrow-bar-left', 'arrow-bar-right']
+
 def line(error_y_mode=None, **kwargs):
 	"""Extension of `plotly.express.line` to use error bands."""
 	ERROR_MODES = {'bar','band','bars','bands',None}
 	if error_y_mode not in ERROR_MODES:
 		raise ValueError(f"'error_y_mode' must be one of {ERROR_MODES}, received {repr(error_y_mode)}.")
+	if 'symbol_sequence' not in kwargs:
+		kwargs['symbol_sequence'] = PLOTLY_SYMBOLS # See https://community.plotly.com/t/plotly-express-is-repeating-symbols/57928
 	if error_y_mode in {'bar','bars',None}:
 		fig = px.line(**kwargs)
 	elif error_y_mode in {'band','bands'}:
@@ -41,4 +45,5 @@ def line(error_y_mode=None, **kwargs):
 			reordered_data.append(fig.data[i+int(len(fig.data)/2)])
 			reordered_data.append(fig.data[i])
 		fig.data = tuple(reordered_data)
+	fig.update_traces(marker_size=11) # Increase the default size of markers to my taste.
 	return fig
