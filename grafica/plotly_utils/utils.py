@@ -2,10 +2,37 @@ import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
 from .colors import MyColors2021
+import numpy as np
 
 PLOTLY_SYMBOLS = ['circle', 'square', 'diamond', 'cross', 'x', 'triangle-up', 'triangle-down', 'triangle-left', 'triangle-right', 'triangle-ne', 'triangle-se', 'triangle-sw', 'triangle-nw', 'pentagon', 'hexagon', 'hexagon2', 'octagon', 'star', 'hexagram', 'star-triangle-up', 'star-triangle-down', 'star-square', 'star-diamond', 'diamond-tall', 'diamond-wide', 'hourglass', 'bowtie', 'circle-cross', 'circle-x', 'square-cross', 'square-x', 'diamond-cross', 'diamond-x', 'cross-thin', 'x-thin', 'asterisk', 'hash', 'y-up', 'y-down', 'y-left', 'y-right', 'line-ew', 'line-ns', 'line-ne', 'line-nw', 'arrow-up', 'arrow-down', 'arrow-left', 'arrow-right', 'arrow-bar-up', 'arrow-bar-down', 'arrow-bar-left', 'arrow-bar-right']
 
-def line(error_y_mode=None, **kwargs):
+def add_grouped_legend(fig, data_frame, graph_dimensions):
+	"""Create a grouped legend based on the example here https://stackoverflow.com/a/69829305/8849755
+	- fig: The figure in which to add such grouped legend.
+	- data_frame: The data frame from which to create the legend, in principle it should be the same that was plotted in `fig`.
+	- graph_dimensions: A dictionary with the arguments such as `color`, `symbol`, `line_dash` passed to plotly.express functions you want to group, with the names of the columns in the data_frame."""
+	param_list = [{'px': {dimension: dimension_value}, 'lg': {'legendgrouptitle_text': dimension_value}} for dimension, dimension_value in graph_dimensions.items()]
+	legend_traces = []
+	for param in param_list:
+		this_dimension_trace = px.line(
+			data_frame,
+			x = "x values",
+			y = np.full(len(data_frame), float('NaN')),
+			**param["px"],
+		).update_traces(
+			**param["lg"],
+			legendgroup = str(param["px"]),
+		)
+		if 'color' not in param['px']:
+			this_dimension_trace.update_traces(
+				marker = {'color': '#000000'},
+				line = {'color': '#000000'},
+			)
+		legend_traces.append(this_dimension_trace)
+	for t in legend_traces:
+		fig.add_traces(t.data)
+
+def line(error_y_mode=None, grouped_legend=False, **kwargs):
 	"""Extension of `plotly.express.line` to use error bands."""
 	ERROR_MODES = {'bar','band','bars','bands',None}
 	if error_y_mode not in ERROR_MODES:
@@ -48,5 +75,13 @@ def line(error_y_mode=None, **kwargs):
 			reordered_data.append(fig.data[i+int(len(fig.data)/2)])
 			reordered_data.append(fig.data[i])
 		fig.data = tuple(reordered_data)
+	
+	if grouped_legend == True:
+		add_grouped_legend(
+			fig = fig,
+			data_frame = kwargs['data_frame'],
+			graph_dimensions = {param: kwargs[param] for param in {'color','symbol','line_dash'} if param in kwargs},
+		)
+	
 	fig.update_traces(marker_size=11) # Increase the default size of markers to my taste.
 	return fig
