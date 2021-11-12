@@ -31,6 +31,7 @@ def add_grouped_legend(fig, data_frame, x, graph_dimensions):
 		).update_traces(
 			**param["lg"],
 			legendgroup = str(param["px"]),
+			line_width = 0 if 'symbol' in param['px'] else None,
 		)
 		if 'color' not in param['px']:
 			this_dimension_trace.update_traces(
