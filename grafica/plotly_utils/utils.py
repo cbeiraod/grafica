@@ -44,6 +44,12 @@ def add_grouped_legend(fig, data_frame, x, graph_dimensions):
 
 def line(error_y_mode=None, grouped_legend=False, **kwargs):
 	"""Extension of `plotly.express.line` to use error bands."""
+	def process_color(color: str, alpha: float):
+		if '#' in color: # This means it is an hex string:
+			return f"rgba({tuple(int(data['line']['color'].lstrip('#')[i:i+2], 16) for i in (0, 2, 4))},{alpha})".replace('((','(').replace('),',',').replace(' ','')
+		elif 'rgb' in color:
+			return f'rgba({color.replace("rgb(","").replace(")","")}, {alpha})'.replace(' ','')
+	
 	ERROR_MODES = {'bar','band','bars','bands',None}
 	if error_y_mode not in ERROR_MODES:
 		raise ValueError(f"'error_y_mode' must be one of {ERROR_MODES}, received {repr(error_y_mode)}.")
@@ -58,13 +64,12 @@ def line(error_y_mode=None, grouped_legend=False, **kwargs):
 			x = list(data['x'])
 			y_upper = list(data['y'] + data['error_y']['array'])
 			y_lower = list(data['y'] - data['error_y']['array'] if data['error_y']['arrayminus'] is None else data['y'] - data['error_y']['arrayminus'])
-			color = f"rgba({tuple(int(data['line']['color'].lstrip('#')[i:i+2], 16) for i in (0, 2, 4))},.3)".replace('((','(').replace('),',',').replace(' ','')
 			fig.add_trace(
 				go.Scatter(
 					x = x+x[::-1],
 					y = y_upper+y_lower[::-1],
 					fill = 'toself',
-					fillcolor = color,
+					fillcolor = process_color(data['line']['color'], alpha=.3),
 					line = dict(
 						color = 'rgba(255,255,255,0)'
 					),
