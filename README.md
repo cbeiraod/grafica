@@ -1,4 +1,4 @@
-# Unified Plotting Interface
+# grafica
 
 My personal unified interface for doing plots. The idea is to wrap any plotting package (Matplotlib, Plotly, etc.) with a simple and unique interface, at least for "basic everyday" plots. So then you write one code to plot with any package.
 
