@@ -60,4 +60,4 @@ for plotter in grafica.manager.plotters:
 				density = density,
 			)
 
-grafica.manager.save(mkdir=True)
+grafica.save_unsaved(mkdir=True)

@@ -60,4 +60,4 @@ for plotter in grafica.manager.plotters:
 		z = zz,
 		zlim = (.5,1.5),
 	)
-grafica.manager.save(mkdir=True)
+grafica.save_unsaved(mkdir=True)

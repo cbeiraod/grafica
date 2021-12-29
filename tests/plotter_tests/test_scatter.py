@@ -66,4 +66,4 @@ for plotter in grafica.manager.plotters:
 				color = (0,0,1),
 			)
 
-grafica.manager.save(mkdir=True)
+grafica.save_unsaved(mkdir=True)
