@@ -1,6 +1,6 @@
 # Unified Plotting Interface
 
-My personal unified interface for doing plots. The idea is to wrap any plotting package (Matplotlib, Plotly, etc.) with a simple and single interface, at least for "basic everyday" plots.
+My personal unified interface for doing plots. The idea is to wrap any plotting package (Matplotlib, Plotly, etc.) with a simple and unique interface, at least for "basic everyday" plots. So then you write one code to plot with any package.
 
 ### Maxims
 
@@ -12,20 +12,22 @@ The maxims to guide the development of this package are:
 
 This is an evolution of [myplotlib](https://github.com/SengerM/myplotlib).
 
-## Illustrative example
+## Usage example
 
-The example below illustrates the philosophy of the Unified Plotting Interface package:
+The example below illustrates the philosophy of this package:
 ```Python
-import unifiedplottinginterface as upi
+import grafica
 import numpy
 
 x = numpy.linspace(0,1)
 
-for package in {'plotly','matplotlib'}:
-	figure = upi.manager.new(
+for package in {'plotly','matplotlib'}: # The same code produces the plot with each package.
+	figure = grafica.new(
 		plotter_name=package, # Just tell me which package you want to use, I'll take care of the rest.
 	)
 	figure.scatter(x, x**2) # Draw a scatter plot.
 
-upi.manager.show()
+grafica.show() # Show all plots.
+
 ```
+More examples in the [tests tests](tests/plotter_tests).
