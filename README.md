@@ -12,6 +12,13 @@ The maxims to guide the development of this package are:
 
 This is an evolution of [myplotlib](https://github.com/SengerM/myplotlib).
 
+## Installation
+Just run
+```
+pip install git+https://github.com/SengerM/grafica
+```
+You also need to install [Plotly](https://plotly.com/python/) and [Matplotlib](https://matplotlib.org/).
+
 ## Usage example
 
 The example below illustrates the philosophy of this package:
@@ -30,4 +37,4 @@ for package in {'plotly','matplotlib'}: # The same code produces the plot with e
 grafica.show() # Show all plots.
 
 ```
-More examples in the [tests tests](tests/plotter_tests).
+More examples in the [tests directory](tests/plotter_tests).
