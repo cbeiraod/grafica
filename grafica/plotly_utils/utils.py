@@ -96,3 +96,91 @@ def line(error_y_mode=None, grouped_legend=False, **kwargs):
 		)
 	
 	return fig
+
+def scatter_histogram(samples, bins='auto', error_y=None, density=None, nan_policy='omit', line_shape='hvh', **kwargs) -> go.Scatter:
+	"""Produces a histogram using a *Scatter trace* with `line_shape = 'hvh'`.
+	The idea is that it has the same interface as `plotly.graph_objects.Scatter`
+	but instead of receiving `x` and `y` it receives the samples and 
+	creates the `x` and `y` using `numpy.histogram`. Then it is plotted
+	as a scatter plot, by default using the `line_shape='hvh'` option. 
+	
+	Parameters
+	----------
+	samples: array
+		A 1D array with the samples.
+	bins: int or sequence of scalars or str, optional
+		This is passed to `numpy.histogram`, see its documentation.
+	error_y: str, default is None
+		This is the dictionary that will be handled to `plotly.graph_objects.Scatter` 
+		(see [here](https://plotly.com/python/reference/scatter/#scatter-error_y-type)).
+		In this function I am adding the functionality that the `type`
+		argument of the dictionary can be `'auto'`. In this case the 
+		error bands are calculated using the binomial expression.
+	density: bool, optional
+		This is handled to `numpy.histogram` directly, see its documentation
+		for details.
+	nan_policy: str, default 'omit'
+		Options are `'omit'` and `'raise'`. If `'omit'`, then `NaN` values
+		in the data are removed. If `'raise'` then `NaN` values in the 
+		data will raise a `ValueError`. This is the same [behavior adopted
+		by scipy](https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/dev/api-dev/nan_policy.html).
+	line_shape: str, default 'hvh'
+		This is handled to `plotly.graph_objects.Scatter`.
+	
+	Returns
+	-------
+	trace: plotly.graph_objects.Scatter
+		A `plotly.graph_objects.Scatter` object.
+	
+	Example
+	-------
+	```
+	from grafica.plotly_utils.utils import scatter_histogram
+	import plotly.graph_objects as go
+	import numpy as np
+
+	samples = np.random.randn(999)
+
+	fig = go.Figure()
+	fig.add_trace(
+		scatter_histogram(
+			samples,
+			error_y = dict(
+				type = 'auto',
+				width = 0,
+			),
+			marker = dict(symbol='circle'),
+			mode = 'markers+lines',
+		)
+	)
+	fig.show()
+	```
+	"""
+	if nan_policy == 'raise' and any(np.isnan(samples)):
+		raise ValueError(f'`samples` contains NaN values.')
+	elif nan_policy == 'omit':
+		samples = samples[~np.isnan(samples)]
+	hist, bin_edges = np.histogram(samples, bins=bins, density=density)
+	bin_centers = bin_edges[:-1] + np.diff(bin_edges)/2
+	# Add an extra bin to the left:
+	hist = np.insert(hist, 0, sum(samples<bin_edges[0]))
+	bin_centers = np.insert(bin_centers, 0, bin_centers[0]-np.diff(bin_edges)[0])
+	# Add an extra bin to the right:
+	hist = np.append(hist,sum(samples>bin_edges[-1]))
+	bin_centers = np.append(bin_centers, bin_centers[-1]+np.diff(bin_edges)[0])
+	
+	if isinstance(error_y, dict) and error_y.get('type') == 'auto':
+		n = len(samples)
+		p = hist/n
+		if density == True:
+			p /= np.diff(bin_centers)[0]*n
+		hist_error = (n*p*(1-p))**.5
+		if density == True:
+			hist_error /= np.diff(bin_centers)[0]*n
+		error_y['type'] = 'data'
+		error_y['array'] = hist_error
+		if error_y.get('width') is None:
+			error_y['width'] = 0 # Default value that I like.
+		if error_y.get('visible') is None:
+			error_y['visible'] = True # For me it is obvious that you want to display the errors is you are giving them to me... So I default this to `True`.
+	return go.Scatter(x = bin_centers, y = hist, error_y = error_y, line_shape=line_shape, **kwargs)
