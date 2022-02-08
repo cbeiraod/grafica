@@ -1,4 +1,4 @@
-# Unified Plotting Interface
+# grafica
 
 My personal unified interface for doing plots. The idea is to wrap any plotting package (Matplotlib, Plotly, etc.) with a simple and unique interface, at least for "basic everyday" plots. So then you write one code to plot with any package.
 
@@ -11,6 +11,13 @@ The maxims to guide the development of this package are:
 - The user must be able to easily access any property of the figure and/or any trace it contains.
 
 This is an evolution of [myplotlib](https://github.com/SengerM/myplotlib).
+
+## Installation
+Just run
+```
+pip install git+https://github.com/SengerM/grafica
+```
+You also need to install [Plotly](https://plotly.com/python/) and [Matplotlib](https://matplotlib.org/).
 
 ## Usage example
 
@@ -30,4 +37,4 @@ for package in {'plotly','matplotlib'}: # The same code produces the plot with e
 grafica.show() # Show all plots.
 
 ```
-More examples in the [tests tests](tests/plotter_tests).
+More examples in the [tests directory](tests/plotter_tests).
