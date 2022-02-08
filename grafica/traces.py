@@ -114,7 +114,7 @@ class Histogram(Trace):
 		# The following is for handling to whoever is going to plot this a collection of xy points to draw this as a scatter plot.
 		samples = np.array(samples)
 		hist, bin_edges = np.histogram(
-			samples[~np.isnan(samples)], 
+			samples[(~np.isnan(samples))&(~np.isinf(samples))],
 			bins = bins,
 			density = density,
 		)
