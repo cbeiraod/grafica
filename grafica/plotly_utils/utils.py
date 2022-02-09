@@ -173,7 +173,7 @@ def scatter_histogram(samples, bins='auto', error_y=None, density=None, nan_poli
 		n = len(samples)
 		p = hist/n
 		if density == True:
-			p /= np.diff(bin_centers)[0]*n
+			p *= np.diff(bin_centers)[0]*n
 		hist_error = (n*p*(1-p))**.5
 		if density == True:
 			hist_error /= np.diff(bin_centers)[0]*n
