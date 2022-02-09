@@ -156,6 +156,9 @@ def scatter_histogram(samples, bins='auto', error_y=None, density=None, nan_poli
 	fig.show()
 	```
 	"""
+	if density is not None:
+		if not isinstance(density, bool):
+			raise TypeError(f'`density` must be `True` or `False`, received object of type {type(density)}.')
 	if nan_policy == 'raise' and any(np.isnan(samples)):
 		raise ValueError(f'`samples` contains NaN values.')
 	elif nan_policy == 'omit':
