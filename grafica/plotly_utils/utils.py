@@ -183,7 +183,9 @@ def scatter_histogram(samples, bins='auto', error_y=None, density=None, nan_poli
 		error_y['type'] = 'data'
 		error_y['array'] = hist_error
 		if error_y.get('width') is None:
-			error_y['width'] = 0 # Default value that I like.
+			error_y['width'] = 1 # Default value that I like.
+		if error_y.get('thickness') is None:
+			error_y['thickness'] = .8 # Default value that I like.
 		if error_y.get('visible') is None:
 			error_y['visible'] = True # For me it is obvious that you want to display the errors is you are giving them to me... So I default this to `True`.
 	return go.Scatter(x = bin_centers, y = hist, error_y = error_y, line_shape=line_shape, **kwargs)
